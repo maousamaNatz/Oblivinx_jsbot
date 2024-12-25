@@ -1,0 +1,93 @@
+{
+  "name": "chatbot_whatsapp",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node bot.js",
+    "dev": "nodemon --config nodemon.json bot.js",
+    "prod": "pm2 start bot.js --name whatsapp-bot",
+    "stop": "pm2 stop whatsapp-bot",
+    "restart": "pm2 restart whatsapp-bot",
+    "monitor": "pm2 monit whatsapp-bot",
+    "logs": "pm2 logs whatsapp-bot",
+    "delete": "pm2 delete whatsapp-bot"
+  },
+  "keywords": [
+    "whatsapp",
+    "chatbot",
+    "nodejs",
+    "javascript",
+    "express",
+    "baileys",
+    "axios",
+    "dotenv",
+    "express",
+    "qrcode-terminal"
+  ],
+  "owner": {
+    "owner1": {
+      "name": "Natzsixn",
+      "email": "natsixn@gmail.com",
+      "url": "https://github.com/natsixn"
+    },
+    "owner2": {
+      "name": "skyDev",
+      "email": "skydev@gmail.com",
+      "url": "https://github.com/skydev"
+    }
+  },
+  "author": {
+    "author1": {
+      "name": "Natzsixn",
+      "email": "natsixn@gmail.com",
+      "url": "https://github.com/natsixn",
+      "roles": [
+        "backend whatsapp bot & web whatsapp bot",
+        "Ai design"
+      ]
+    },
+    "author2": {
+      "name": "skyDev",
+      "email": "skydev@gmail.com",
+      "url": "https://github.com/skydev",
+      "roles": [
+        "frontend whatsapp bot & web whatsapp bot",
+        "Ai design"
+      ]
+    }
+  },
+  "license": "ISC",
+  "description": "Chatbot whatsapp yang dimaksudkan untuk membantu dalam mengelola whatsapp bot dan untuk bersenang senang dengan ai",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/natsixn/Chatbot_whatsapp.git"
+  },
+  "homepage": "https://github.com/natsixn/Chatbot_whatsapp.git",
+  "bugs": {
+    "url": "https://github.com/natsixn/Chatbot_whatsapp/issues"
+  },
+  "features": {
+    "feature1": {
+      "name": "whatsapp bot",
+      "description": "Chatbot whatsapp yang dimaksudkan untuk membantu dalam mengelola whatsapp bot dan untuk bersenang senang dengan ai"
+    },
+    "feature2": {
+      "name": "web whatsapp bot",
+      "description": "Chatbot whatsapp yang dimaksudkan untuk membantu dalam mengelola whatsapp bot dan untuk bersenang senang dengan ai"
+    }
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "^6.7.9",
+    "axios": "^1.7.9",
+    "crypto": "^1.0.1",
+    "dotenv": "^16.4.7",
+    "link-preview-js": "^3.0.12",
+    "moment-timezone": "^0.5.46",
+    "mysql2": "^3.11.5",
+    "pino": "^9.5.0",
+    "pino-pretty": "^13.0.0",
+    "qrcode-terminal": "^0.12.0",
+    "sharp": "^0.32.6"
+  }
+}

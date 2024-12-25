@@ -1,0 +1,19 @@
+{
+  "watch": [
+    "src/",
+    "bot.js",
+    ".env"
+  ],
+  "ignore": [
+    "sessions/",
+    "node_modules/",
+    "*.test.js",
+    "*.json",
+    "logs/"
+  ],
+  "ext": "js",
+  "delay": "2000",
+  "events": {
+    "restart": "clear"
+  }
+}

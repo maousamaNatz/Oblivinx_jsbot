@@ -1,0 +1,26 @@
+{
+    "bot":{
+        "sessionName": "oblixn-session",
+        "botName": "Oblixn Bot",
+        "owner": ["6281910058235"],
+        "prefix": "!"
+    },
+    "lang":{
+        "id": "id",
+        "en": "en",
+        "es": "es",
+        "fr": "fr",
+        "de": "de",
+        "it": "it",
+        "ja": "ja",
+        "ko": "ko",
+        "pt": "pt",
+        "ru": "ru",
+        "ar": "ar",
+        "hi": "hi",
+        "nl": "nl",
+        "tr": "tr",
+        "vi": "vi",
+        "zh": "zh"
+    }
+}
