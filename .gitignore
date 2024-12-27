@@ -1,6 +1,18 @@
-node_modules
+# Sessions directory
+.sessions/
+.sessions/*
+sessions/
+sessions/*
+**/sessions/
+**/.sessions/
+*.session
+*-session
+*-session/
+oblixn-session/
+oblixn-session/*
 .env
-.store
-baileys_store.json
-.sessions
-.sessions/oblixn-session
+.env.*
+node_modules/
+package-lock.json
+.tmp/
+.temp/
