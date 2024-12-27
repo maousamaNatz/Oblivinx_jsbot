@@ -1,18 +1,17 @@
-# Sessions directory
-.sessions/
-.sessions/*
-sessions/
-sessions/*
-**/sessions/
-**/.sessions/
-*.session
-*-session
-*-session/
+# Sessions directory - tambahkan pola lebih spesifik
 oblixn-session/
 oblixn-session/*
-.env
-.env.*
-node_modules/
+**/oblixn-session/
+**/oblixn-session/*
+
+# Store files
+baileys_store.json
+store/
+store/*
+**/store/
+
+# Credentials
+auth_info_*
+creds.json
+node_modules
 package-lock.json
-.tmp/
-.temp/

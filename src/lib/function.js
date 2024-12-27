@@ -1,4 +1,5 @@
 const axios = require('axios');
+const cheerio = require('cheerio');
 
 async function downloadImage(url) {
     try {
@@ -11,7 +12,6 @@ async function downloadImage(url) {
         throw error;
     }
 }
-
 module.exports = {
-    downloadImage
+    downloadImage,
 }; 
