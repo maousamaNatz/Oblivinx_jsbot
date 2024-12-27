@@ -138,6 +138,15 @@ const config = {
     },
     sessionCleanupInterval: 1800000, // 30 menit
     sessionMaxAge: 86400000, // 24 jam
+    download: {
+        maxSize: 100 * 1024 * 1024, // Maksimal 100MB
+        maxDuration: 600, // Maksimal 10 menit (dalam detik)
+        timeout: 300000, // Timeout download 5 menit
+        ytdlOpts: {
+            quality: 'highest',
+            filter: 'audioandvideo'
+        }
+    }
 };
 
 // Buat direktori jika belum ada
