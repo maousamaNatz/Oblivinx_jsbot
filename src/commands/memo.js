@@ -1,5 +1,9 @@
 const os = require('os');
+const si = require('systeminformation');
 const { botLogger } = require('../utils/logger');
+const cpus = os.cpus();
+
+const prosessor = cpus[0].model;
 
 Oblixn.cmd({
     name: 'ping',
@@ -20,7 +24,14 @@ Oblixn.cmd({
             
             // Dapatkan info sistem
             const usedMemory = process.memoryUsage();
-            const systemStats = {
+
+            // Dapatkan semua info GPU
+            const gpuInfo = await si.graphics();
+            const gpuModels = gpuInfo.controllers.map((gpu, index) => 
+                ` GPU ${index + 1}: ${gpu.model || 'Tidak terdeteksi'} (${gpu.vendor || 'Unknown Vendor'})`
+            ).join('\n');
+            
+            const systemStats = {   
                 cpu: os.loadavg()[0],
                 laptop: os.hostname(),
                 totalMemory: (os.totalmem() / 1024 / 1024 / 1024).toFixed(2), // GB
@@ -28,6 +39,8 @@ Oblixn.cmd({
                 uptime: formatUptime(os.uptime()),
                 nodeVersion: process.version,
                 platform: os.platform(),
+                prosessor: prosessor,
+                GPU: gpuModels,  // Semua GPU ditampilkan
             };
 
             // Format pesan status
@@ -42,6 +55,8 @@ Oblixn.cmd({
 ├ Node: ${systemStats.nodeVersion}
 ├ CPU Load: ${systemStats.cpu}%
 ├ Total RAM: ${systemStats.totalMemory} GB
+├ CPU: ${systemStats.prosessor}
+├ GPU Info:${systemStats.GPU}
 └ Free RAM: ${systemStats.freeMemory} GB
 
 🧠 *Memory Usage:*
