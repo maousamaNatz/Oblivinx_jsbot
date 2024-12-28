@@ -185,6 +185,35 @@ function cleanupSessions() {
     }
 }
 
+
+// ====== GLOBAL VARIABLES ======
+const commands = []; // Array untuk menyimpan semua command
+const PREFIX = process.env.PREFIX || "!"; // Prefix command default
+const messageQueue = new Map();
+const RATE_LIMIT = 2000; // 2 detik antara pesan
+
+// Tambahkan konstanta untuk retry
+const MAX_RETRIES = 5;
+const RETRY_INTERVAL = 5000; // 5 detik
+let retryCount = 0;
+
+// Tambahkan variabel untuk tracking panggilan
+const callAttempts = new Map();
+const MAX_CALL_ATTEMPTS = 3;
+
+// Tambahkan konstanta untuk status
+const BAN_TYPES = {
+  CALL: "CALL_BAN", // Ban karena telepon (dengan blokir)
+  MANUAL: "MANUAL_BAN", // Ban manual oleh owner (tanpa blokir)
+};
+
+// ====== LOGGER ======
+const log = (type, message) => {
+  const now = new Date().toLocaleString();
+  console.log(`[${now}] [${type}] ${message}`);
+};
+
+
 // Jalankan cleanup secara berkala
 setInterval(cleanupSessions, config.sessionCleanupInterval);
 
@@ -193,5 +222,16 @@ module.exports = {
     store,
     msgRetryCounterCache,
     categoryEmojis,
-    pinterestCookies
+    pinterestCookies,
+    commands,
+    PREFIX,
+    messageQueue,
+    RATE_LIMIT,
+    MAX_RETRIES,
+    RETRY_INTERVAL,
+    callAttempts,
+    MAX_CALL_ATTEMPTS,
+    BAN_TYPES,
+    log,
+    retryCount
 };

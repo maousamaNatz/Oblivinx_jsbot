@@ -45,7 +45,7 @@ async function loadCommands() {
 const commands = loadCommands();
 console.log(commands);
 // Fungsi untuk menampilkan info bot
-Oblixn.cmd({
+global.Oblixn.cmd({
   name: "info",
   alias: ["botinfo", "infobot"],
   desc: "Menampilkan informasi bot",
@@ -68,8 +68,7 @@ Oblixn.cmd({
   },
 });
 
-// Command help
-Oblixn.cmd({
+global.Oblixn.cmd({
   name: "help",
   alias: ["menu", "?"],
   desc: "Menampilkan daftar perintah yang tersedia",
@@ -83,34 +82,29 @@ Oblixn.cmd({
         throw new Error("Commands belum diinisialisasi");
       }
 
+      // Kumpulkan semua command yang valid
       if (Oblixn.commands instanceof Map) {
         for (const [_, cmd] of Oblixn.commands) {
-          // Skip command owner dan ownercommand jika bukan owner
-          if (
-            cmd &&
-            cmd.name &&
-            (isOwner ||
-              (cmd.category !== "owner" && cmd.category !== "ownercommand"))
-          ) {
-            commands.push({
-              name: cmd.name,
-              category: cmd.category || "uncategorized",
-            });
+          if (cmd && cmd.name && cmd.category) {
+            // Hanya tambahkan command jika bukan owner/ownercommand atau user adalah owner
+            if (isOwner || (cmd.category !== "owner" && cmd.category !== "ownercommand")) {
+              commands.push({
+                name: cmd.name,
+                category: cmd.category
+              });
+            }
           }
         }
       } else {
         for (const cmd of Object.values(Oblixn.commands)) {
-          // Skip command owner dan ownercommand jika bukan owner
-          if (
-            cmd &&
-            cmd.name &&
-            (isOwner ||
-              (cmd.category !== "owner" && cmd.category !== "ownercommand"))
-          ) {
-            commands.push({
-              name: cmd.name,
-              category: cmd.category || "uncategorized",
-            });
+          if (cmd && cmd.name && cmd.category) {
+            // Hanya tambahkan command jika bukan owner/ownercommand atau user adalah owner
+            if (isOwner || (cmd.category !== "owner" && cmd.category !== "ownercommand")) {
+              commands.push({
+                name: cmd.name,
+                category: cmd.category
+              });
+            }
           }
         }
       }
@@ -119,32 +113,22 @@ Oblixn.cmd({
         return msg.reply("Belum ada command yang terdaftar.");
       }
 
-      let helpMessage = "";
+      // Buat pesan help
       const username = msg.pushName || msg.sender.split("@")[0];
-      const usermsg = `Halo kak ${username}, berikut adalah daftar perintah yang tersedia:`;
-      helpMessage = `${usermsg}\n\n*DAFTAR PERINTAH*\n\n`;
+      let helpMessage = `Halo kak ${username}, berikut adalah daftar perintah yang tersedia:\n\n*DAFTAR PERINTAH*\n\n`;
 
-      // Kelompokkan berdasarkan kategori
-      const categories = {};
-      commands.forEach((cmd) => {
-        const category = cmd.category;
-        // Skip kategori owner dan ownercommand
-        if (category !== "owner" && category !== "ownercommand") {
-          if (!categories[category]) {
-            categories[category] = [];
-          }
-          categories[category].push(cmd);
+      // Kelompokkan command berdasarkan kategori
+      const categories = commands.reduce((acc, cmd) => {
+        if (!acc[cmd.category]) {
+          acc[cmd.category] = [];
         }
-      });
+        acc[cmd.category].push(cmd);
+        return acc;
+      }, {});
 
       // Susun pesan berdasarkan kategori
       Object.entries(categories).forEach(([category, cmds]) => {
-        // Skip kategori yang kosong dan kategori owner/ownercommand
-        if (
-          cmds.length > 0 &&
-          category !== "owner" &&
-          category !== "ownercommand"
-        ) {
+        if (cmds.length > 0) {
           const emoji = categoryEmojis[category.toLowerCase()] || "❓";
           helpMessage += `${emoji} *${category.toUpperCase()}*\n`;
           cmds.forEach((cmd) => {
@@ -158,8 +142,10 @@ Oblixn.cmd({
 
       await msg.reply(helpMessage);
     } catch (error) {
-      console.error("Error dalam command help:", error);
-      botLogger.error(`Error dalam command help: ${error.message}`);
+      botLogger.error("Error dalam command help:", {
+        message: error.message,
+        stack: error.stack
+      });
       await msg.reply("Terjadi kesalahan saat menampilkan menu bantuan.");
     }
   },

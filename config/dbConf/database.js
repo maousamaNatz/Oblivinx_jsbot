@@ -25,17 +25,76 @@ async function registerUser(userId, phoneNumber, username) {
     }
 }
 
-// Fungsi untuk ban user
+// Fungsi untuk ban user (oleh owner)
 async function banUser(userId, reason, bannedBy) {
     try {
         const [result] = await pool.execute(
-            'INSERT INTO banned_users (user_id, reason, banned_by) VALUES (?, ?, ?)',
-            [userId, reason, bannedBy]
+            'INSERT INTO banned_users (user_id, reason, banned_by, is_system_block) VALUES (?, ?, ?, ?)',
+            [userId, reason, bannedBy, false]
         );
-        return { success: true, message: 'User berhasil diban' };
+        return { 
+            success: true, 
+            message: 'User berhasil diban',
+            isSystemBlock: false
+        };
     } catch (error) {
         console.error('Error banning user:', error);
-        return { success: false, message: 'Gagal melakukan ban user' };
+        return { 
+            success: false, 
+            message: 'Gagal melakukan ban user',
+            isSystemBlock: false 
+        };
+    }
+}
+
+// Fungsi untuk blokir user (oleh sistem)
+async function blockUserBySystem(userId, reason = 'Blocked by system due to call') {
+    try {
+        const [result] = await pool.execute(
+            'INSERT INTO banned_users (user_id, reason, banned_by, is_system_block) VALUES (?, ?, ?, ?)',
+            [userId, reason, 'SYSTEM', true]
+        );
+        return { 
+            success: true, 
+            message: 'User berhasil diblokir oleh sistem',
+            isSystemBlock: true
+        };
+    } catch (error) {
+        console.error('Error blocking user:', error);
+        return { 
+            success: false, 
+            message: 'Gagal memblokir user',
+            isSystemBlock: true 
+        };
+    }
+}
+
+// Fungsi untuk cek status ban/block user
+async function checkUserStatus(userId) {
+    try {
+        const [rows] = await pool.execute(
+            'SELECT * FROM banned_users WHERE user_id = ?',
+            [userId]
+        );
+        
+        if (rows.length > 0) {
+            return {
+                isBanned: true,
+                isSystemBlock: rows[0].is_system_block,
+                reason: rows[0].reason,
+                bannedBy: rows[0].banned_by
+            };
+        }
+        
+        return {
+            isBanned: false,
+            isSystemBlock: false,
+            reason: null,
+            bannedBy: null
+        };
+    } catch (error) {
+        console.error('Error checking user status:', error);
+        throw error;
     }
 }
 
@@ -109,6 +168,26 @@ async function getCallAttempts(userId) {
     }
 }
 
+// Fungsi untuk cek status ban
+async function checkBanStatus(userId) {
+    try {
+        const [rows] = await pool.execute(
+            'SELECT * FROM banned_users WHERE user_id = ? AND is_banned = 1',
+            [userId]
+        );
+        return {
+            isBanned: rows.length > 0,
+            banInfo: rows[0] || null
+        };
+    } catch (error) {
+        botLogger.error('Error checking ban status:', error);
+        return {
+            isBanned: false,
+            banInfo: null
+        };
+    }
+}
+
 // Export fungsi-fungsi database
 module.exports = {
     pool,
@@ -116,5 +195,8 @@ module.exports = {
     banUser,
     unbanUser,
     logCallAttempt,
-    getCallAttempts
+    getCallAttempts,
+    blockUserBySystem,
+    checkUserStatus,
+    checkBanStatus
 }; 

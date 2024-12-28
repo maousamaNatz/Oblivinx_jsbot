@@ -1,6 +1,5 @@
 const { botLogger } = require("../utils/logger");
 const { config } = require("../../config/config");
-// const { pool } = require('../../config/dbConf/database');
 const { banUser, unbanUser, pool } = require("../../config/dbConf/database");
 const fs = require("fs");
 const path = require("path");
@@ -295,24 +294,16 @@ Oblixn.cmd({
         normalizedSender = '62' + normalizedSender.slice(1);
       }
 
-      // Proses ban user
+      // Proses ban user tanpa memblokir di WhatsApp
       const result = await banUser(targetUser, reason, normalizedSender);
-      console.log('Ban result:', result);
-
+      
       if (result.success) {
-        // Block di WhatsApp
-        try {
-          await Oblixn.sock.updateBlockStatus(`${targetUser}@s.whatsapp.net`, "block");
-        } catch (blockError) {
-          console.log('WhatsApp block error:', blockError);
-        }
-
         return msg.reply(
-          `✅ Berhasil ban user @${targetUser}
-          
-*Detail Ban:*
-📝 Alasan: ${reason}
-👤 Dibanned oleh: @${normalizedSender}`,
+          `✅ Berhasil ban user @${targetUser}\n\n` +
+          `*Detail Ban:*\n` +
+          `📝 Alasan: ${reason}\n` +
+          `👤 Dibanned oleh: @${normalizedSender}\n` +
+          `ℹ️ Status: Banned (masih bisa menghubungi bot)`,
           {
             mentions: [`${targetUser}@s.whatsapp.net`, `${normalizedSender}@s.whatsapp.net`]
           }
