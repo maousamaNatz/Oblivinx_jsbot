@@ -1,6 +1,6 @@
 {
   "name": "chatbot_whatsapp",
-  "version": "0.0.1",
+  "version": "0.0.4",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -86,18 +86,24 @@
     "crypto": "^1.0.1",
     "dotenv": "^16.4.7",
     "filesize": "^10.1.6",
+    "form-data": "^4.0.1",
     "google-it": "^1.6.4",
+    "google-libphonenumber": "^3.2.40",
+    "https-proxy-agent": "^7.0.6",
     "jsdom": "^25.0.1",
     "link-preview-js": "^3.0.12",
     "moment-timezone": "^0.5.46",
     "mysql2": "^3.11.5",
     "node-fetch": "^2.7.0",
+    "opencage-api-client": "^1.0.7",
     "pino": "^9.5.0",
     "pino-pretty": "^13.0.0",
     "qrcode-terminal": "^0.12.0",
     "qs": "^6.13.1",
+    "random-useragent": "^0.5.0",
     "sharp": "^0.32.6",
     "systeminformation": "^5.23.21",
+    "uuid": "^11.0.3",
     "wikipedia": "^2.1.2",
     "youtube-dl-exec": "^3.0.10"
   }

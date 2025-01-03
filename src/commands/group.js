@@ -1,8 +1,6 @@
 const { isAdmin } = require('../handler/permission');
 const { botLogger } = require('../utils/logger');
 const { downloadMediaMessage } = require('@whiskeysockets/baileys');
-const fileManager = require('../../config/memoryAsync/readfile');
-
 const prefix = process.env.PREFIX;
 Oblixn.cmd({
     name: 'group',
@@ -201,45 +199,6 @@ Oblixn.cmd({
         }
     }
 });
-
-// Update add command dengan format yang sama
-Oblixn.cmd({
-    name: 'add',
-    desc: 'Menambahkan anggota ke grup',
-    category: 'admin',
-    async exec(m, t) {
-        try {
-            const groupId = m.key?.remoteJid;
-            const senderId = m.key?.participant?.split('@')[0] || m.sender?.split('@')[0];
-            const normalizedSenderId = senderId ? `${senderId}@s.whatsapp.net` : '';
-
-            if (!groupId?.endsWith('@g.us')) 
-                return m.reply('Perintah ini hanya untuk grup!');
-            
-            const isGroupAdmin = await isAdmin(groupId, normalizedSenderId);
-            const botId = m.botNumber?.split(':')[0]?.split('@')[0];
-            const normalizedBotId = botId ? `${botId}@s.whatsapp.net` : '';
-            const botAdmin = await isAdmin(groupId, normalizedBotId);
-            
-            if (!isGroupAdmin) return m.reply('Anda harus menjadi admin!');
-            if (!botAdmin) return m.reply('Bot harus menjadi admin!');
-            
-            if (!t.args[0]) return m.reply('Masukkan nomor yang ingin ditambahkan!');
-            
-            let number = t.args[0].replace(/[^0-9]/g, '');
-            if (!number.startsWith('62')) number = '62' + number;
-            number = number + '@s.whatsapp.net';
-            
-            await Oblixn.sock.groupParticipantsUpdate(groupId, [number], 'add');
-            m.reply('✅ Berhasil menambahkan anggota ke grup.');
-            
-        } catch (error) {
-            console.error('Error in add command:', error);
-            m.reply('❌ Gagal menambahkan anggota. Pastikan nomor valid dan tidak privat.');
-        }
-    }
-});
-
 // Command untuk hidetag
 Oblixn.cmd({
     name: 'hidetag',
@@ -496,6 +455,55 @@ Oblixn.cmd({
             console.error('Error in setppgc command:', error);
             m.reply('❌ Terjadi kesalahan saat mengubah foto profil grup: ' + error.message);
             botLogger.error(error);
+        }
+    }
+});
+
+global.Oblixn.cmd({
+    name: "add",
+    alias: ["invite"],
+    desc: "Menambahkan anggota ke grup",
+    category: "admin",
+    async exec(msg, { args }) {
+        try {
+            // Validasi input nomor
+            if (!args[0]) return msg.reply("❌ Masukkan nomor yang akan ditambahkan!");
+
+            let number = args[0].replace(/[^0-9]/g, '');
+            
+            // Tambahkan awalan 62 jika belum ada
+            if (!number.startsWith('62')) {
+                number = '62' + (number.startsWith('0') ? number.slice(1) : number);
+            }
+
+            // Validasi nomor WhatsApp
+            const [result] = await Oblixn.sock.onWhatsApp(`${number}@s.whatsapp.net`);
+            if (!result) {
+                return msg.reply(`❌ Nomor ${number} tidak terdaftar di WhatsApp!`);
+            }
+
+            // Tambahkan ke grup
+            const response = await Oblixn.sock.groupParticipantsUpdate(
+                msg.key.remoteJid,
+                [`${number}@s.whatsapp.net`],
+                "add"
+            );
+
+            // Handle response
+            if (response[0].status === "200") {
+                msg.reply(
+                    `✅ Berhasil menambahkan @${number} ke dalam grup!`,
+                    { mentions: [number] }
+                );
+            } else if (response[0].status === "403") {
+                msg.reply(`❌ Gagal menambahkan @${number}! Nomor tersebut mungkin telah mengatur privasi grup.`);
+            } else {
+                msg.reply(`❌ Gagal menambahkan @${number}! Status: ${response[0].status}`);
+            }
+
+        } catch (error) {
+            console.error("Error in add command:", error);
+            return msg.reply(`❌ Terjadi kesalahan: ${error.message}`);
         }
     }
 });

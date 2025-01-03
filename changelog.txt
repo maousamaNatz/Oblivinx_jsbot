@@ -1,0 +1,48 @@
+*0.0.1*
+*#Added*
+- Botinfo
+- optimasi bot
+- group setting
+- memo setting
+- set up bot
+- tools 
+- AI (GPT, CLAUDE, GEMINI, COPILOT, O1, NATZ MODEL)
+
+*#Changed*
+Tidak Ada
+
+*#Fixed*
+Tidak Ada
+
+*#Remove*
+Tidak Ada
+
+*0.0.2*
+*#Added*
+- Botinfo (detail bot)
+- set up Botinfo
+- add downloader yt
+- tools (gempa, pinterest, wiki) 
+
+*#Changed*
+Tidak Ada
+
+*#Fixed*
+- memo setting (fix bug)
+
+*#Remove*
+Tidak Ada
+
+*0.0.3*
+*#Added*
+tidak ada
+
+*#Changed*
+- tools wiki fix bug 
+- fix error yt downloader
+
+*#Fixed*
+Tidak Ada
+
+*#Remove*
+- fitur AI (API IS BANNED)

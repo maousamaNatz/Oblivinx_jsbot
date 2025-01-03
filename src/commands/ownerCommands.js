@@ -1,6 +1,6 @@
 const { botLogger } = require("../utils/logger");
 const { config } = require("../../config/config");
-const { banUser, unbanUser, pool } = require("../../config/dbConf/database");
+const { banUser, pool, unbanUser, checkBanStatus, getListBannedUsers } = require("../../config/dbConf/database");
 const fs = require("fs");
 const path = require("path");
 Oblixn.cmd({
@@ -36,7 +36,7 @@ _Note: Mohon chat owner jika ada keperluan penting saja_`;
         text: basicMessage,
       });
     } catch (error) {
-      console.error("Error in ownerinfo command:", {
+      botLogger.error("Error in ownerinfo command:", {
         name: error.name,
         message: error.message,
         stack: error.stack,
@@ -231,236 +231,132 @@ _Broadcast selesai dalam ${successCount + failCount} detik_`
 // Command ban user
 Oblixn.cmd({
   name: "ban",
-  alias: ["block"],
   desc: "Ban user dari menggunakan bot",
-  category: "admin",
+  category: "ownerCommand",
   async exec(msg, { args }) {
     try {
-      console.log('=== BAN COMMAND START ===');
-      
-      // Cek apakah pengirim adalah owner
       if (!Oblixn.isOwner(msg.sender)) {
         return msg.reply("⚠️ Perintah ini hanya untuk owner bot!");
       }
 
-      // Dapatkan user yang akan diban
-      let targetUser;
-      if (msg.quoted) {
-        targetUser = msg.quoted.participant || msg.quoted.sender;
-        console.log('Target from quote:', targetUser);
-      } else if (msg.mentions && msg.mentions.length > 0) {
-        targetUser = msg.mentions[0];
-        console.log('Target from mention:', targetUser);
-      } else if (args[0]) {
-        // Format nomor
-        let number = args[0].replace(/[^0-9]/g, "");
-        console.log('Original number:', number);
-        
-        if (number.startsWith("0")) {
-          number = "62" + number.slice(1);
-        } else if (!number.startsWith("62")) {
-          number = "62" + number;
-        }
-        targetUser = number;
-        console.log('Formatted number:', targetUser);
+      // Dapatkan nomor yang akan diban
+      const number = args[0]?.replace(/[^0-9]/g, "");
+      if (!number) {
+        return msg.reply("❌ Format salah! Gunakan: !ban nomor alasan");
       }
-
-      if (!targetUser) {
-        return msg.reply(`❌ Format salah!
-        
-*Cara Penggunaan:*
-1. Tag user: !ban @user alasan
-2. Reply chat: !ban alasan
-3. Nomor: !ban 628xxx alasan`);
-      }
-
-      // Normalisasi format nomor
-      targetUser = targetUser.replace('@s.whatsapp.net', '');
-      targetUser = targetUser.replace('+', '');
-      if (targetUser.startsWith('08')) {
-        targetUser = '62' + targetUser.slice(1);
-      }
-      console.log('Normalized target user:', targetUser);
 
       // Dapatkan alasan ban
-      const reason = msg.quoted
-        ? args.join(" ")
-        : args.slice(1).join(" ") || "Tidak ada alasan";
+      const reason = args.slice(1).join(" ") || "Tidak ada alasan";
+      const userId = number.endsWith("@s.whatsapp.net") ? number : `${number}@s.whatsapp.net`;
 
-      // Normalisasi format sender untuk database
-      let normalizedSender = msg.sender.replace('@s.whatsapp.net', '');
-      normalizedSender = normalizedSender.replace('+', '');
-      if (normalizedSender.startsWith('08')) {
-        normalizedSender = '62' + normalizedSender.slice(1);
-      }
-
-      // Proses ban user tanpa memblokir di WhatsApp
-      const result = await banUser(targetUser, reason, normalizedSender);
-      
+      const result = await banUser(userId, reason, msg.sender);
       if (result.success) {
-        return msg.reply(
-          `✅ Berhasil ban user @${targetUser}\n\n` +
-          `*Detail Ban:*\n` +
-          `📝 Alasan: ${reason}\n` +
-          `👤 Dibanned oleh: @${normalizedSender}\n` +
-          `ℹ️ Status: Banned (masih bisa menghubungi bot)`,
-          {
-            mentions: [`${targetUser}@s.whatsapp.net`, `${normalizedSender}@s.whatsapp.net`]
-          }
-        );
+        await msg.reply(`✅ Berhasil ban user ${number}\nAlasan: ${reason}`);
       } else {
-        return msg.reply(`❌ ${result.message}`);
+        await msg.reply(`❌ Gagal ban user: ${result.message}`);
       }
-
     } catch (error) {
-      console.error('=== BAN COMMAND ERROR ===');
-      console.error('Error type:', error.name);
-      console.error('Error message:', error.message);
-      console.error('Error stack:', error.stack);
-      return msg.reply(`❌ Terjadi kesalahan saat memproses command ban: ${error.message}`);
+      console.error("Error in ban command:", error);
+      await msg.reply("❌ Terjadi kesalahan saat memproses perintah");
     }
   },
 });
 
-// Command untuk unban
+// Command unban user
 Oblixn.cmd({
   name: "unban",
-  alias: ["unblock"],
-  desc: "Unban user yang telah diban",
-  category: "admin",
+  desc: "Unban user yang dibanned",
+  category: "ownerCommand",
   async exec(msg, { args }) {
     try {
-      console.log('=== UNBAN COMMAND START ===');
-      
-      // Cek apakah pengirim adalah owner
       if (!Oblixn.isOwner(msg.sender)) {
         return msg.reply("⚠️ Perintah ini hanya untuk owner bot!");
       }
 
-      // Dapatkan user yang akan diunban
-      let targetUser;
-      if (msg.quoted) {
-        targetUser = msg.quoted.participant || msg.quoted.sender;
-        console.log('Target from quote:', targetUser);
-      } else if (msg.mentions && msg.mentions.length > 0) {
-        targetUser = msg.mentions[0];
-        console.log('Target from mention:', targetUser);
-      } else if (args[0]) {
-        // Format nomor
-        let number = args[0].replace(/[^0-9]/g, "");
-        console.log('Original number:', number);
-        
-        if (number.startsWith("0")) {
-          number = "62" + number.slice(1);
-        } else if (!number.startsWith("62")) {
-          number = "62" + number;
-        }
-        targetUser = number;
-        console.log('Formatted number:', targetUser);
-      }
-
-      if (!targetUser) {
-        return msg.reply(`❌ Format salah!
-        
-*Cara Penggunaan:*
-1. Tag user: !unban @user
-2. Reply chat: !unban
-3. Nomor: !unban 628xxx`);
+      // Validasi input
+      if (!args[0]) {
+        return msg.reply("❌ Format salah! Gunakan: !unban nomor");
       }
 
       // Normalisasi format nomor
-      targetUser = targetUser.replace('@s.whatsapp.net', '');
-      targetUser = targetUser.replace('+', '');
-      if (targetUser.startsWith('08')) {
-        targetUser = '62' + targetUser.slice(1);
-      }
-      console.log('Normalized target user:', targetUser);
-
-      // Proses unban user
-      const result = await unbanUser(targetUser);
-      console.log('Unban result:', result);
-
-      if (result.success) {
-        // Unblock di WhatsApp
-        try {
-          await Oblixn.sock.updateBlockStatus(`${targetUser}@s.whatsapp.net`, "unblock");
-          console.log('WhatsApp unblock successful');
-        } catch (blockError) {
-          console.log('WhatsApp unblock error:', blockError);
+      let number = args[0].replace(/[^0-9]/g, "");
+      
+      // Pastikan format nomor benar
+      if (!number.startsWith("62")) {
+        if (number.startsWith("0")) {
+          number = "62" + number.slice(1);
+        } else if (number.startsWith("8")) {
+          number = "62" + number;
         }
-
-        return msg.reply(
-          `✅ Berhasil unban user @${targetUser}
-          
-*Detail:*
-📝 Status: ${result.wasUnbanned ? 'Diunban dari database' : 'Sudah tidak dibanned'}`,
-          {
-            mentions: [`${targetUser}@s.whatsapp.net`]
-          }
-        );
-      } else {
-        return msg.reply(`❌ ${result.message}`);
       }
 
+      console.log('Attempting to unban number:', {
+        originalNumber: args[0],
+        normalizedNumber: number
+      });
+
+      // Proses unban
+      const result = await unbanUser(number);
+
+      if (result.success && result.wasUnbanned) {
+        // Format nomor untuk ditampilkan
+        const displayNumber = number.startsWith("62") ? number : "62" + number;
+        await msg.reply(`✅ Berhasil unban user ${displayNumber}`);
+      } else {
+        let errorMessage = result.message;
+        if (result.message.includes("tidak ditemukan")) {
+          errorMessage = `User dengan nomor ${number} tidak ditemukan dalam daftar banned`;
+        }
+        await msg.reply(`❌ Gagal unban user: ${errorMessage}`);
+      }
     } catch (error) {
-      console.error('=== UNBAN COMMAND ERROR ===');
-      console.error('Error type:', error.name);
-      console.error('Error message:', error.message);
-      console.error('Error stack:', error.stack);
-      return msg.reply(`❌ Terjadi kesalahan saat memproses command unban: ${error.message}`);
+      console.error("Error in unban command:", {
+        error: error,
+        args: args
+      });
+      await msg.reply("❌ Terjadi kesalahan saat memproses perintah");
     }
   },
 });
 
-// Command list banned users
+// Command listban
 Oblixn.cmd({
   name: "listban",
-  desc: "Menampilkan list user yang di ban",
+  desc: "Menampilkan daftar user yang dibanned",
   category: "ownerCommand",
   async exec(msg) {
-    if (!Oblixn.isOwner(msg.sender)) {
-      return msg.reply("⚠️ Perintah ini hanya untuk owner bot!");
-    }
-
     try {
-      // Ambil data banned users dari database
-      const [bannedUsers] = await pool.execute(
-        "SELECT user_id, reason, banned_by, banned_at FROM banned_users"
-      );
-
-      if (!bannedUsers || bannedUsers.length === 0) {
-        return msg.reply("✨ Tidak ada user yang di ban");
+      if (!Oblixn.isOwner(msg.sender)) {
+        return msg.reply("⚠️ Perintah ini hanya untuk owner bot!");
       }
 
-      let text = "*DAFTAR USER BANNED*\n\n";
-      const mentions = [];
+      const result = await getListBannedUsers();
+      
+      if (!result.success) {
+        return msg.reply(`❌ Gagal mengambil daftar banned: ${result.message}`);
+      }
 
-      bannedUsers.forEach((user, index) => {
-        const userNumber = user.user_id.split("@")[0];
-        const banDate = new Date(user.banned_at).toLocaleString("id-ID", {
-          dateStyle: "medium",
-          timeStyle: "short",
-        });
-        const bannedByNumber = user.banned_by.split("@")[0];
+      if (result.data.length === 0) {
+        return msg.reply("📝 Tidak ada user yang dibanned saat ini");
+      }
 
-        text += `${index + 1}. @${userNumber}\n`;
-        text += `├ Alasan: ${user.reason}\n`;
-        text += `├ Dibanned oleh: @${bannedByNumber}\n`;
-        text += `└ Tanggal: ${banDate}\n\n`;
-
-        mentions.push(user.user_id);
-        mentions.push(user.banned_by);
+      let message = "*DAFTAR USER BANNED*\n\n";
+      result.data.forEach((user, index) => {
+        message += `${index + 1}. Nomor: ${user.userId}\n`;
+        message += `   Username: ${user.username}\n`;
+        message += `   Alasan: ${user.reason}\n`;
+        message += `   Dibanned oleh: ${user.bannedBy}\n`;
+        message += `   Tanggal: ${user.banDate}\n\n`;
       });
 
-      await msg.reply(text, {
-        mentions: mentions,
-      });
+      await msg.reply(message);
     } catch (error) {
-      botLogger.error(`Listban error: ${error.message}`);
-      await msg.reply("❌ Gagal menampilkan list banned users!");
+      console.error("Error in listban command:", error);
+      await msg.reply("❌ Terjadi kesalahan saat memproses perintah");
     }
   },
 });
+
 // Command untuk menampilkan bantuan owner
 Oblixn.cmd({
   name: "ownerhelp",

@@ -99,17 +99,16 @@ async function unbanUser(userId) {
 
     // Cek apakah user ada di database banned
     const [checkBan] = await pool.execute(
-      "SELECT * FROM banned_users WHERE user_id = ?",
+      "SELECT is_banned FROM users WHERE user_id = ? AND is_banned = 1",
       [cleanUserId]
     );
 
     if (checkBan.length === 0) {
       throw new Error("User tidak dalam keadaan banned");
     }
-
-    // Hapus dari tabel banned_users
-    const [result] = await pool.execute(
-      "DELETE FROM banned_users WHERE user_id = ?",
+    // Update kolom is_banned di tabel users
+    await pool.execute(
+      "UPDATE users SET is_banned = 0 WHERE user_id = ?",
       [cleanUserId]
     );
 

@@ -4,7 +4,6 @@ const os = require("os");
 const packageJson = require("../../package.json");
 const fs = require("fs");
 const path = require("path");
-
 async function loadCommands() {
   const commands = new Map();
   const commandsDir = path.join(__dirname);
@@ -87,10 +86,13 @@ global.Oblixn.cmd({
         for (const [_, cmd] of Oblixn.commands) {
           if (cmd && cmd.name && cmd.category) {
             // Hanya tambahkan command jika bukan owner/ownercommand atau user adalah owner
-            if (isOwner || (cmd.category !== "owner" && cmd.category !== "ownercommand")) {
+            if (
+              isOwner ||
+              (cmd.category !== "owner" && cmd.category !== "ownercommand")
+            ) {
               commands.push({
                 name: cmd.name,
-                category: cmd.category
+                category: cmd.category,
               });
             }
           }
@@ -99,10 +101,13 @@ global.Oblixn.cmd({
         for (const cmd of Object.values(Oblixn.commands)) {
           if (cmd && cmd.name && cmd.category) {
             // Hanya tambahkan command jika bukan owner/ownercommand atau user adalah owner
-            if (isOwner || (cmd.category !== "owner" && cmd.category !== "ownercommand")) {
+            if (
+              isOwner ||
+              (cmd.category !== "owner" && cmd.category !== "ownercommand")
+            ) {
               commands.push({
                 name: cmd.name,
-                category: cmd.category
+                category: cmd.category,
               });
             }
           }
@@ -144,7 +149,7 @@ global.Oblixn.cmd({
     } catch (error) {
       botLogger.error("Error dalam command help:", {
         message: error.message,
-        stack: error.stack
+        stack: error.stack,
       });
       await msg.reply("Terjadi kesalahan saat menampilkan menu bantuan.");
     }
@@ -174,3 +179,28 @@ function formatUptime(seconds) {
 
   return parts.join(" ");
 }
+
+global.Oblixn.cmd({
+  name: "changelog",
+  alias: ["changelog", "update"],
+  desc: "Menampilkan changelog bot",
+  category: "info",
+  async exec(msg) {
+    console.log(msg);
+    try {
+      console.log("Changelog command executed");
+
+      const changelog = path.join(__dirname, "../../changelog.txt");
+      const read = fs.readFileSync(changelog, "utf8");
+            
+      // Format pesan changelog
+      let formattedChangelog = "📝 *CHANGELOG BOT*\n\n";
+      formattedChangelog += read;
+
+      await msg.reply(formattedChangelog);
+    } catch (error) {
+      botLogger.error("Error dalam command changelog:", error);
+      await msg.reply("❌ Terjadi kesalahan saat menampilkan changelog.");
+    }
+  },
+});

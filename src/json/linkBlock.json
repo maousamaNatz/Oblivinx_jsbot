@@ -1,0 +1,26 @@
+{
+    "Group":{
+        "id": "",
+        "dibuat": "",
+        "dibuat_oleh": "",
+        "bot_admin": "",
+        "total_anggota": "",
+        "owner": "",
+        "status":{
+            "anti_bot": "tidak",
+            "anti_hapus_pesan": "tidak",
+            "anti_sembunyikan_tag": "tidak",
+            "anti_tautan_grup_atau_saluran": "tidak",
+            "anti_sekali_dilihat": "tidak",
+            "stiker_otomatis": "tidak",
+            "deteksi_log": "tidak",
+            "naik_level_otomatis": "tidak",
+            "bisukan_bot": "tidak",
+            "anti_negara": "tidak",
+            "wibu": "tidak",
+            "selamat_datang": "tidak",
+            "selamat_tinggal": "tidak",
+            "peringatan": "tidak"
+        }
+    }
+}

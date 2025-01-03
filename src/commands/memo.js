@@ -105,39 +105,39 @@ function formatUptime(uptime) {
 }
 
 // Command untuk melihat status jaringan
-Oblixn.cmd({
-    name: 'netstat',
-    alias: ['network', 'connection'],
-    desc: 'Menampilkan status jaringan bot',
-    category: 'info',
-    async exec(m, t) {
-        try {
-            const networkInterfaces = os.networkInterfaces();
-            let networkInfo = '*🌐 NETWORK STATUS*\n\n';
+// Oblixn.cmd({
+//     name: 'netstat',
+//     alias: ['network', 'connection'],
+//     desc: 'Menampilkan status jaringan bot',
+//     category: 'info',
+//     async exec(m, t) {
+//         try {
+//             const networkInterfaces = os.networkInterfaces();
+//             let networkInfo = '*🌐 NETWORK STATUS*\n\n';
 
-            // Loop melalui setiap interface jaringan
-            Object.keys(networkInterfaces).forEach(interfaceName => {
-                const interfaces = networkInterfaces[interfaceName];
-                networkInfo += `*${interfaceName}:*\n`;
+//             // Loop melalui setiap interface jaringan
+//             Object.keys(networkInterfaces).forEach(interfaceName => {
+//                 const interfaces = networkInterfaces[interfaceName];
+//                 networkInfo += `*${interfaceName}:*\n`;
                 
-                interfaces.forEach(interface => {
-                    if (interface.family === 'IPv4') {
-                        networkInfo += `├ IP: ${interface.address}\n`;
-                        networkInfo += `├ Netmask: ${interface.netmask}\n`;
-                        networkInfo += `└ MAC: ${interface.mac}\n\n`;
-                    }
-                });
-            });
+//                 interfaces.forEach(interface => {
+//                     if (interface.family === 'IPv4') {
+//                         networkInfo += `├ IP: ${interface.address}\n`;
+//                         networkInfo += `├ Netmask: ${interface.netmask}\n`;
+//                         networkInfo += `└ MAC: ${interface.mac}\n\n`;
+//                     }
+//                 });
+//             });
 
-            m.reply(networkInfo);
-            botLogger.info('Network status checked');
+//             m.reply(networkInfo);
+//             botLogger.info('Network status checked');
 
-        } catch (error) {
-            botLogger.error('Error in netstat command:', error);
-            m.reply('❌ Terjadi kesalahan saat mengecek status jaringan.');
-        }
-    }
-});
+//         } catch (error) {
+//             botLogger.error('Error in netstat command:', error);
+//             m.reply('❌ Terjadi kesalahan saat mengecek status jaringan.');
+//         }
+//     }
+// });
 
 // Command untuk membersihkan memori
 Oblixn.cmd({

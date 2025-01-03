@@ -3,6 +3,8 @@ const axios = require("axios"),
   wiki = require("wikipedia");
 const PinterestScrapper = require("../lib/scrapper");
 const GempaScraper = require("../lib/gempa");
+const { HttpsProxyAgent } = require('https-proxy-agent');
+
 global.Oblixn.cmd({
   name: "weather",
   alias: ["cuaca"],
@@ -137,14 +139,10 @@ global.Oblixn.cmd({
   desc: "🖼️ Mencari gambar di Pinterest",
   category: "search",
   async exec(msg, { args }) {
-    try {
-      if (!args || args.length === 0) {
-        return msg.reply(
-          "❗ Silakan berikan kata kunci pencarian\nContoh: .pinterest kucing"
-        );
-      }
+    if (!args.length) return msg.reply("❌ Masukkan kata kunci pencarian!");
+    const query = args.join(" ");
 
-      const query = args.join(" ");
+    try {
       const waitMsg = await msg.reply(
         `🔍 Sedang mencari gambar untuk: "${query}"...`
       );
@@ -165,61 +163,23 @@ global.Oblixn.cmd({
         );
       }
 
-      // Fungsi untuk download gambar
-      async function downloadImage(url) {
+      // Batasi jumlah gambar
+      const maxImages = Math.min(3, results.length);
+      
+      for (let i = 0; i < maxImages; i++) {
         try {
-          const response = await axios.get(url, {
-            responseType: "arraybuffer",
-            headers: {
-              "User-Agent":
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-            },
-            timeout: 10000,
-          });
-          return Buffer.from(response.data);
-        } catch (error) {
-          console.error("Download error:", error);
-          throw error;
-        }
-      }
-
-      // Kirim gambar satu per satu
-      let successCount = 0;
-      for (const pin of results) {
-        try {
-          const buffer = await downloadImage(pin.imageUrl);
-          const caption =
-            `🎯 Hasil pencarian Pinterest\n` +
-            `📝 Judul: ${pin.title}\n` +
-            `🔍 Query: ${query}\n` +
-            `🆔 Pin ID: ${pin.id}\n` +
-            `📍 Tipe: ${pin.type}\n\n` +
-            `> *ᴘᴏᴡᴇʀᴅ ʙʏ OBLIVINX-ᴍᴅ ➤*`;
-
-          // Gunakan msg.reply untuk mengirim gambar
+          const imageBuffer = await downloadImage(results[i].imageUrl);
           await msg.reply({
-            image: buffer,
-            caption: caption,
+            image: imageBuffer,
+            caption: `🔍 Hasil pencarian untuk: ${query}\n📌 ${i + 1}/${maxImages}`
           });
-
-          successCount++;
-          // Delay antara pengiriman
-          await new Promise((resolve) => setTimeout(resolve, 2000));
+          
+          // Delay antar pengiriman
+          await new Promise(resolve => setTimeout(resolve, 2000));
         } catch (err) {
-          console.error(`Failed to process pin:`, err);
+          console.error(`Failed to process image ${i + 1}:`, err);
           continue;
         }
-      }
-
-      // Kirim ringkasan hasil
-      if (successCount === 0) {
-        await msg.reply(
-          "❌ Gagal mengirim semua gambar. Silakan coba lagi nanti."
-        );
-      } else if (successCount < results.length) {
-        await msg.reply(
-          `⚠️ Berhasil mengirim ${successCount} dari ${results.length} gambar.`
-        );
       }
     } catch (error) {
       console.error("Pinterest Error:", error);
@@ -392,4 +352,46 @@ async function broadcastGempaPesan(msg, data) {
   } catch (error) {
     console.error("Error broadcasting gempa:", error);
   }
+}
+
+async function downloadImage(url, retries = 3) {
+    try {
+        const headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Referer': 'https://www.pinterest.com/',
+            'sec-ch-ua': '"Google Chrome";v="91", "Chromium";v="91"',
+            'sec-ch-ua-mobile': '?0',
+            'sec-fetch-dest': 'image',
+            'sec-fetch-mode': 'no-cors',
+            'sec-fetch-site': 'cross-site'
+        };
+
+        // Gunakan free proxy (ganti dengan proxy yang aktif)
+        const proxy = {
+            protocol: 'http',
+            host: '185.199.108.150',
+            port: 4145
+        };
+
+        const httpsAgent = new HttpsProxyAgent(`http://${proxy.host}:${proxy.port}`);
+
+        const response = await axios.get(url, {
+            headers,
+            responseType: 'arraybuffer',
+            httpsAgent,
+            timeout: 15000,
+            maxRedirects: 5
+        });
+
+        return response.data;
+    } catch (error) {
+        if (retries > 0) {
+            console.log(`Retrying download... (${retries} attempts left)`);
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            return downloadImage(url, retries - 1);
+        }
+        throw new Error(`Download error: ${error.message}`);
+    }
 }

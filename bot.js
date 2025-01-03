@@ -23,8 +23,15 @@ const {
   MAX_CALL_ATTEMPTS,
   BAN_TYPES,
 } = require("./config/config");
-const { pool } = require("./config/dbConf/database");
+const {
+  pool,
+  banUser,
+  blockUserBySystem,
+  checkUserStatus,
+  registerUser,
+} = require("./config/dbConf/database");
 const { unbanUser } = require("./src/handler/messageHandler");
+const { handleGroupMessage } = require("./src/handler/groupHandler");
 
 // ====== LOGGER ======
 const log = (type, message) => {
@@ -265,7 +272,6 @@ async function startConnection() {
       // Simpan credentials
       await saveCreds();
     });
-
     // Handle Incoming Messages
     sock.ev.on("messages.upsert", async (m) => {
       try {
@@ -273,6 +279,42 @@ async function startConnection() {
         if (!msg.message) return;
 
         const sender = msg.key.remoteJid;
+        if (!sender) return;
+
+        // Skip jika pesan dari bot sendiri
+        if (msg.key.fromMe) return;
+
+        // Tentukan jenis chat dan ambil ID pengirim yang benar
+        const isGroup = sender.endsWith('@g.us');
+        const participant = msg.key.participant || msg.participant || sender;
+        
+        // Ambil nomor pengirim yang benar
+        let senderNumber = (isGroup ? participant : sender).split('@')[0];
+        
+        // Log untuk debugging
+        console.log('Processing message from:', {
+          senderNumber,
+          isGroup,
+          participant
+        });
+
+        // Normalisasi nomor telepon
+        if (senderNumber.startsWith('62')) {
+          // Cek apakah ini nomor telepon valid (bukan ID grup atau sistem)
+          if (/^62[8-9][0-9]{8,11}$/.test(senderNumber)) {
+            try {
+              // Register user ke database
+              const result = await registerUser(senderNumber, msg.pushName);
+              console.log('Registration result:', result);
+            } catch (error) {
+              console.error('Error registering user:', {
+                error: error.message,
+                stack: error.stack,
+                senderNumber
+              });
+            }
+          }
+        }
 
         // Cek rate limiting
         const lastMessageTime = messageQueue.get(sender) || 0;
@@ -282,11 +324,30 @@ async function startConnection() {
         }
         messageQueue.set(sender, now);
 
-        const isGroup = sender.endsWith("@g.us");
-        const participant = msg.key.participant || msg.participant || sender;
+        // Enhance message object
+        const enhancedMsg = {
+          ...msg,
+          chat: sender,
+          from: sender,
+          sender: participant,
+          isGroup: isGroup,
+          botNumber: sock.user.id,
+          pushName: msg.pushName,
+          mentions: msg.message?.extendedTextMessage?.contextInfo?.mentionedJid || [],
+          reply: async (content) => {
+            let messageContent;
+            if (typeof content === "object") {
+              messageContent = content;
+            } else {
+              messageContent = { text: String(content) };
+            }
+            return await sock.sendMessage(sender, messageContent, {
+              quoted: msg,
+            });
+          },
+        };
 
-        if (msg.key.fromMe) return;
-
+        // Handle command messages
         const messageText =
           msg.message?.conversation ||
           msg.message?.extendedTextMessage?.text ||
@@ -295,36 +356,9 @@ async function startConnection() {
 
         if (messageText.startsWith(PREFIX)) {
           const cleanText = messageText.slice(PREFIX.length);
-
-          const enhancedMsg = {
-            ...msg,
-            chat: sender,
-            from: sender,
-            sender: participant,
-            isGroup: isGroup,
-            botNumber: sock.user.id,
-            mentions:
-              msg.message?.extendedTextMessage?.contextInfo?.mentionedJid || [],
-            reply: async (content) => {
-              let messageContent;
-
-              // Jika content adalah object
-              if (typeof content === "object") {
-                messageContent = content;
-              }
-              // Jika content adalah string atau tipe data lainnya
-              else {
-                messageContent = { text: String(content) };
-              }
-
-              return await sock.sendMessage(sender, messageContent, {
-                quoted: msg,
-              });
-            },
-          };
-
           executeCommand(sock, enhancedMsg, sender, cleanText);
         }
+
       } catch (error) {
         botLogger.error("Error processing message:", error);
       }
@@ -635,19 +669,11 @@ process.on("unhandledRejection", (reason, promise) => {
 // Fungsi untuk cek status ban
 async function checkBanStatus(userId) {
   try {
-    // Bersihkan userId dari @s.whatsapp.net atau domain lainnya
-    const cleanUserId = userId.split("@")[0];
-
-    const [rows] = await pool.execute(
-      "SELECT * FROM banned_users WHERE user_id = ?",
-      [cleanUserId]
-    );
-
-    botLogger.info(`Checking ban status for user: ${cleanUserId}`);
-
+    const status = await checkUserStatus(userId);
+    botLogger.info(`Checking ban status for user: ${userId}`);
     return {
-      isBanned: rows.length > 0,
-      banInfo: rows[0] || null,
+      isBanned: status.isBanned,
+      banInfo: status.isBanned ? { reason: "Banned by admin" } : null,
     };
   } catch (error) {
     botLogger.error("Error checking ban status:", error);
@@ -655,5 +681,19 @@ async function checkBanStatus(userId) {
       isBanned: false,
       banInfo: null,
     };
+  }
+}
+
+// Contoh penggunaan fungsi banUser
+async function handleBanCommand(userId, reason, bannedBy) {
+  try {
+    const result = await banUser(userId, reason, bannedBy);
+    if (result.success) {
+      console.log(result.message);
+    } else {
+      console.error(result.message);
+    }
+  } catch (error) {
+    console.error("Error handling ban command:", error);
   }
 }
