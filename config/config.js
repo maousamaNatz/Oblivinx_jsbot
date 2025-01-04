@@ -4,9 +4,25 @@ const path = require("path");
 const fs = require("fs");
 const os = require("os");
 const dotenv = require("dotenv");
-const { isBlocked } = require("./dbConf/database");
 dotenv.config();
+const { readFileSync } = require("fs");
+// Load game data dengan error handling yang lebih baik
+const loadGameData = (filename) => {
+  try {
+    const filePath = path.join(__dirname, "../src/json/games/", filename);
+    
+    // Cek apakah file exists
+    if (!fs.existsSync(filePath)) {
+      console.warn(`Warning: Game file ${filename} tidak ditemukan`);
+      return { data: [] }; // Return empty data jika file tidak ada
+    }
 
+    return JSON.parse(fs.readFileSync(filePath));
+  } catch (error) {
+    console.warn(`Warning: Error loading ${filename}:`, error.message);
+    return { data: [] }; // Return empty data jika terjadi error
+  }
+};
 // Load bot configuration dari JSON
 const botConfig = JSON.parse(
   fs.readFileSync(path.join(__dirname, "../src/json/bot.json"))
@@ -92,6 +108,50 @@ const msgRetryCounterCache = new Map();
 
 // Konfigurasi bot
 const config = {
+  gameData: {
+    tebakGambar: loadGameData("tebakGambar.json"),
+    tebakKata: loadGameData("tebakKata.json"),
+    trivia: loadGameData("trivia.json"),
+    puzzleLogika: loadGameData("puzzleLogika.json"),
+    tebakLagu: loadGameData("tebakLagu.json"),
+
+    siapaAku: loadGameData("siapaAku.json"),
+    tebakEmoji: loadGameData("tebakEmoji.json"),
+    duaPuluhPertanyaan: loadGameData("duaPuluhPertanyaan.json"),
+    tod: loadGameData("tod.json"),
+    hangman: loadGameData("hangman.json"),
+
+    dungeon: loadGameData("dungeon.json"),
+    tebakFakta: loadGameData("tebakFakta.json"),
+    quizKepribadian: loadGameData("quizKepribadian.json"),
+    lelangVirtual: loadGameData("lelangVirtual.json"),
+    hartaKarun: loadGameData("hartaKarun.json"),
+
+    tebakHarga: loadGameData("tebakHarga.json"),
+    kartuVirtual: loadGameData("kartuVirtual.json"),
+    quizHarian: loadGameData("quizHarian.json"),
+    tebakFilm: loadGameData("tebakFilm.json"),
+    rpg: loadGameData("rpg.json"),
+
+    tebakAngka: loadGameData("tebakAngka.json"),
+    gameMemory: loadGameData("gamememory.json"),
+    kuisBahasa: loadGameData("kuizbahasa.json"),
+    mafia: loadGameData("mafia.json"),
+    matematika: loadGameData("matematika.json"),
+
+    petualangan: loadGameData("Petualangan.json"),
+    simonSays: loadGameData("simonsays.json"),
+    storyBuilder: loadGameData("storyBuilder.json"),
+    tebakKarakter: loadGameData("tebakKarakter.json"),
+    tebakLokasi: loadGameData("tebakLokasi.json"),
+
+    tebakMeme: loadGameData("tebakMeme.json"),
+    tebakWarna: loadGameData("tebakWarna.json"),
+    pilihanGanda: loadGameData("pilihanGanda.json"),
+    tebaklagu: loadGameData("tebaklagu.json"),
+    rpg: loadGameData("rpg.json"),
+    dungeon: loadGameData("dungeon.json"),
+  },
   coinmarketcap: {
     apiKey: process.env.COINMARKETCAP_API_KEY,
     baseUrl: "https://pro-api.coinmarketcap.com/v1",
@@ -102,7 +162,7 @@ const config = {
   prosessor: prosessor,
   languages: botConfig.lang,
   basePath: BASE_PATH,
-  sessionsPath: SESSIONS_PATH,  
+  sessionsPath: SESSIONS_PATH,
   storePath: STORE_PATH,
   sessionName: path.join(SESSIONS_PATH, botConfig.bot.sessionName),
   maxRetries: 3,

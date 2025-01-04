@@ -1,0 +1,16 @@
+[
+  {
+    "id": 1,
+    "location": "Gua Tersembunyi",
+    "clues": [
+      "Tempat gelap dan lembab",
+      "Dekat air terjun",
+      "Ada stalaktit dan stalagmit"
+    ],
+    "treasure": {
+      "name": "Peti Emas",
+      "value": 1000,
+      "image": "https://example.com/treasures/chest.png"
+    }
+  }
+]

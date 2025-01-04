@@ -1,0 +1,9 @@
+[
+  {
+    "id": 1,
+    "question": "Jika 2 + 2 = 4, 3 + 3 = 6, maka 4 + 4 = ?",
+    "answer": "8",
+    "hint": "Pola penjumlahan sederhana",
+    "difficulty": "easy"
+  }
+]

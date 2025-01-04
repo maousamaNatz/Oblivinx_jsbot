@@ -1,0 +1,28 @@
+{
+  "questions": [
+    {
+      "id": 1,
+      "question": "Apa yang kamu lakukan di waktu luang?",
+      "options": [
+        "Membaca buku",
+        "Bermain game",
+        "Olahraga",
+        "Tidur"
+      ],
+      "weights": {
+        "introvert": [3, 1, 0, 2],
+        "extrovert": [0, 2, 3, 1]
+      }
+    }
+  ],
+  "results": {
+    "introvert": {
+      "title": "Si Introver",
+      "description": "Kamu adalah orang yang suka menyendiri dan menikmati ketenangan"
+    },
+    "extrovert": {
+      "title": "Si Ekstrovert",
+      "description": "Kamu adalah orang yang energik dan suka bersosialisasi"
+    }
+  }
+}

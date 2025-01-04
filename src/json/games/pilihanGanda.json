@@ -1,0 +1,9 @@
+{
+    "data": [
+        {
+            "question": "Ibu kota Indonesia adalah?",
+            "options": ["Jakarta", "Bandung", "Surabaya", "Medan"],
+            "answer": 0
+        }
+    ]
+}

@@ -1,0 +1,12 @@
+[
+  {
+    "word": "Hello",
+    "language": "English",
+    "translations": {
+      "indonesia": "Halo",
+      "japanese": "こんにちは",
+      "korean": "안녕하세요"
+    },
+    "difficulty": "easy"
+  }
+]

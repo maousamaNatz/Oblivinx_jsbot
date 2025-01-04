@@ -3,13 +3,16 @@ const axios = require("axios"),
   wiki = require("wikipedia");
 const PinterestScrapper = require("../lib/scrapper");
 const GempaScraper = require("../lib/gempa");
-const { HttpsProxyAgent } = require('https-proxy-agent');
+const { HttpsProxyAgent } = require("https-proxy-agent");
+const fs = require("fs");
+const acrcloud = require("acrcloud");
+const FileManager = require("../../config/memoryAsync/readfile");
 
-global.Oblixn.cmd({
+Oblixn.cmd({
   name: "weather",
   alias: ["cuaca"],
   desc: "🌤 Mendapatkan informasi cuaca untuk lokasi tertentu",
-  category: "search",
+  category: "tools",
   async exec(msg, { args }) {
     try {
       const city = args.join(" ");
@@ -56,11 +59,11 @@ global.Oblixn.cmd({
   },
 });
 // Command untuk mencari informasi
-global.Oblixn.cmd({
+Oblixn.cmd({
   name: "wiki",
   alias: ["wikipedia"],
   desc: "🔍 Mencari informasi dari Wikipedia",
-  category: "search",
+  category: "tools",
   async exec(msg, { args }) {
     try {
       if (!args || args.length === 0) {
@@ -133,11 +136,11 @@ global.Oblixn.cmd({
 });
 
 // Command Pinterest
-global.Oblixn.cmd({
+Oblixn.cmd({
   name: "pinterest",
   alias: ["pin"],
   desc: "🖼️ Mencari gambar di Pinterest",
-  category: "search",
+  category: "tools",
   async exec(msg, { args }) {
     if (!args.length) return msg.reply("❌ Masukkan kata kunci pencarian!");
     const query = args.join(" ");
@@ -165,17 +168,19 @@ global.Oblixn.cmd({
 
       // Batasi jumlah gambar
       const maxImages = Math.min(3, results.length);
-      
+
       for (let i = 0; i < maxImages; i++) {
         try {
           const imageBuffer = await downloadImage(results[i].imageUrl);
           await msg.reply({
             image: imageBuffer,
-            caption: `🔍 Hasil pencarian untuk: ${query}\n📌 ${i + 1}/${maxImages}`
+            caption: `🔍 Hasil pencarian untuk: ${query}\n📌 ${
+              i + 1
+            }/${maxImages}`,
           });
-          
+
           // Delay antar pengiriman
-          await new Promise(resolve => setTimeout(resolve, 2000));
+          await new Promise((resolve) => setTimeout(resolve, 2000));
         } catch (err) {
           console.error(`Failed to process image ${i + 1}:`, err);
           continue;
@@ -191,7 +196,7 @@ global.Oblixn.cmd({
 });
 
 // Command untuk gempa
-global.Oblixn.cmd({
+Oblixn.cmd({
   name: "gempa",
   alias: ["infogempa", "gempabumi"],
   desc: "🌋 Menampilkan informasi gempa terkini dari BMKG",
@@ -355,43 +360,115 @@ async function broadcastGempaPesan(msg, data) {
 }
 
 async function downloadImage(url, retries = 3) {
-    try {
-        const headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-            'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.9',
-            'Referer': 'https://www.pinterest.com/',
-            'sec-ch-ua': '"Google Chrome";v="91", "Chromium";v="91"',
-            'sec-ch-ua-mobile': '?0',
-            'sec-fetch-dest': 'image',
-            'sec-fetch-mode': 'no-cors',
-            'sec-fetch-site': 'cross-site'
-        };
+  try {
+    const headers = {
+      "User-Agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+      Accept:
+        "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+      "Accept-Language": "en-US,en;q=0.9",
+      Referer: "https://www.pinterest.com/",
+      "sec-ch-ua": '"Google Chrome";v="91", "Chromium";v="91"',
+      "sec-ch-ua-mobile": "?0",
+      "sec-fetch-dest": "image",
+      "sec-fetch-mode": "no-cors",
+      "sec-fetch-site": "cross-site",
+    };
 
-        // Gunakan free proxy (ganti dengan proxy yang aktif)
-        const proxy = {
-            protocol: 'http',
-            host: '185.199.108.150',
-            port: 4145
-        };
+    // Gunakan free proxy (ganti dengan proxy yang aktif)
+    const proxy = {
+      protocol: "http",
+      host: "185.199.108.150",
+      port: 4145,
+    };
 
-        const httpsAgent = new HttpsProxyAgent(`http://${proxy.host}:${proxy.port}`);
+    const httpsAgent = new HttpsProxyAgent(
+      `http://${proxy.host}:${proxy.port}`
+    );
 
-        const response = await axios.get(url, {
-            headers,
-            responseType: 'arraybuffer',
-            httpsAgent,
-            timeout: 15000,
-            maxRedirects: 5
-        });
+    const response = await axios.get(url, {
+      headers,
+      responseType: "arraybuffer",
+      httpsAgent,
+      timeout: 15000,
+      maxRedirects: 5,
+    });
 
-        return response.data;
-    } catch (error) {
-        if (retries > 0) {
-            console.log(`Retrying download... (${retries} attempts left)`);
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            return downloadImage(url, retries - 1);
-        }
-        throw new Error(`Download error: ${error.message}`);
+    return response.data;
+  } catch (error) {
+    if (retries > 0) {
+      console.log(`Retrying download... (${retries} attempts left)`);
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      return downloadImage(url, retries - 1);
     }
+    throw new Error(`Download error: ${error.message}`);
+  }
 }
+
+Oblixn.cmd({
+  name: "shazam",
+  alias: ["detectmusic", "findmusic"],
+  desc: "🎵 Mendeteksi judul lagu dari file audio/video",
+  category: "tools",
+  async exec(msg, { args }) {
+    try {
+      const mime = msg.mimetype || "";
+
+      if (!/audio|video/.test(mime)) {
+        return await msg.reply(
+          "❌ Silakan balas pesan audio/video yang ingin dideteksi lagunya!"
+        );
+      }
+
+      // Setup ACRCloud
+      const acr = new acrcloud({
+        host: "identify-eu-west-1.acrcloud.com",
+        access_key: "c33c767d683f78bd17d4bd4991955d81",
+        access_secret: "bvgaIAEtADBTbLwiPGYlxupWqkNGIjT7J9Ag2vIu",
+      });
+
+      // Download media
+      const media = await msg.download();
+
+      // Simpan file menggunakan FileManager
+      const fileType = mime.split("/")[0];
+      const saveResult = await FileManager.saveFile(
+        media,
+        "shazam." + mime.split("/")[1],
+        fileType
+      );
+
+      if (!saveResult.success) {
+        throw new Error("Gagal menyimpan file audio");
+      }
+
+      // Identifikasi lagu
+      const res = await acr.identify(media);
+
+      if (res.status.code !== 0) {
+        throw new Error(res.status.msg);
+      }
+
+      // Ambil metadata
+      const { title, artists, album, genres, release_date } =
+        res.metadata.music[0];
+
+      // Format hasil
+      const result = `
+╭─────────── *HASIL SHAZAM* ───────────╮
+│ *Judul:* ${title}
+│ *Artis:* ${
+        artists ? artists.map((v) => v.name).join(", ") : "Tidak diketahui"
+      }
+│ *Album:* ${album?.name || "Tidak diketahui"}
+│ *Genre:* ${genres ? genres.map((v) => v.name).join(", ") : "Tidak diketahui"}
+│ *Tanggal Rilis:* ${release_date || "Tidak diketahui"}
+╰────────────────────────────────────╯`;
+      msg.reply(result);
+      // Hapus file temporary
+      await FileManager.deleteFile(saveResult.path);
+    } catch (error) {
+      console.error("Error in shazam:", error);
+    }
+  },
+});

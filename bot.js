@@ -285,32 +285,32 @@ async function startConnection() {
         if (msg.key.fromMe) return;
 
         // Tentukan jenis chat dan ambil ID pengirim yang benar
-        const isGroup = sender.endsWith('@g.us');
+        const isGroup = sender.endsWith("@g.us");
         const participant = msg.key.participant || msg.participant || sender;
-        
+
         // Ambil nomor pengirim yang benar
-        let senderNumber = (isGroup ? participant : sender).split('@')[0];
-        
+        let senderNumber = (isGroup ? participant : sender).split("@")[0];
+
         // Log untuk debugging
-        console.log('Processing message from:', {
+        console.log("Processing message from:", {
           senderNumber,
           isGroup,
-          participant
+          participant,
         });
 
         // Normalisasi nomor telepon
-        if (senderNumber.startsWith('62')) {
+        if (senderNumber.startsWith("62")) {
           // Cek apakah ini nomor telepon valid (bukan ID grup atau sistem)
           if (/^62[8-9][0-9]{8,11}$/.test(senderNumber)) {
             try {
               // Register user ke database
               const result = await registerUser(senderNumber, msg.pushName);
-              console.log('Registration result:', result);
+              console.log("Registration result:", result);
             } catch (error) {
-              console.error('Error registering user:', {
+              console.error("Error registering user:", {
                 error: error.message,
                 stack: error.stack,
-                senderNumber
+                senderNumber,
               });
             }
           }
@@ -333,7 +333,8 @@ async function startConnection() {
           isGroup: isGroup,
           botNumber: sock.user.id,
           pushName: msg.pushName,
-          mentions: msg.message?.extendedTextMessage?.contextInfo?.mentionedJid || [],
+          mentions:
+            msg.message?.extendedTextMessage?.contextInfo?.mentionedJid || [],
           reply: async (content) => {
             let messageContent;
             if (typeof content === "object") {
@@ -358,7 +359,6 @@ async function startConnection() {
           const cleanText = messageText.slice(PREFIX.length);
           executeCommand(sock, enhancedMsg, sender, cleanText);
         }
-
       } catch (error) {
         botLogger.error("Error processing message:", error);
       }

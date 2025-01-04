@@ -1,0 +1,9 @@
+[
+  {
+    "audioUrl": "https://example.com/sounds/cat.mp3",
+    "answer": "kucing",
+    "category": "hewan",
+    "duration": 3,
+    "hint": "Hewan peliharaan yang suka mengeong"
+  }
+]

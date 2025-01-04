@@ -1,0 +1,14 @@
+{
+  "roles": {
+    "mafia": {
+      "description": "Membunuh warga setiap malam",
+      "team": "evil",
+      "nightAction": true
+    },
+    "detective": {
+      "description": "Menyelidiki pemain setiap malam",
+      "team": "good",
+      "nightAction": true
+    }
+  }
+}

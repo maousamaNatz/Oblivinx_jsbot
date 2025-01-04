@@ -1,0 +1,394 @@
+{
+  "data": [
+    {
+      "name": "Kucing",
+      "category": "Hewan",
+      "hints": [
+        "Hewan peliharaan",
+        "Suka mengeong",
+        "Bersih dan suka menjilat tubuhnya", 
+        "Aktif di malam hari"
+      ]
+    },
+    {
+      "name": "Anjing",
+      "category": "Hewan", 
+      "hints": [
+        "Hewan peliharaan",
+        "Suka menggonggong",
+        "Loyal kepada pemiliknya",
+        "Dapat dilatih untuk berbagai tugas"
+      ]
+    },
+    {
+      "name": "Gajah",
+      "category": "Hewan",
+      "hints": [
+        "Hewan besar",
+        "Memiliki belalai",
+        "Tinggal di hutan atau padang rumput",
+        "Hidup berkelompok"
+      ]
+    },
+    {
+      "name": "Singa",
+      "category": "Hewan",
+      "hints": [
+        "Raja hutan",
+        "Karnivora", 
+        "Memiliki surai (jantan)",
+        "Hidup dalam kelompok yang disebut kebanggaan"
+      ]
+    },
+    {
+      "name": "Jeruk",
+      "category": "Buah",
+      "hints": [
+        "Buah citrus",
+        "Berwarna oranye",
+        "Mengandung vitamin C tinggi",
+        "Rasa manis atau asam"
+      ]
+    },
+    {
+      "name": "Apel",
+      "category": "Buah",
+      "hints": [
+        "Buah yang populer",
+        "Berwarna merah atau hijau",
+        "Rasa manis atau asam",
+        "Sering dijadikan jus"
+      ]
+    },
+    {
+      "name": "Panda",
+      "category": "Hewan",
+      "hints": [
+        "Hewan dari Tiongkok",
+        "Makan bambu",
+        "Berwarna hitam dan putih",
+        "Hewan yang terancam punah"
+      ]
+    },
+    {
+      "name": "Mawar",
+      "category": "Tanaman",
+      "hints": [
+        "Bunga yang harum",
+        "Berwarna merah",
+        "Memiliki duri di batangnya",
+        "Melambangkan cinta"
+      ]
+    },
+    {
+      "name": "Mango",
+      "category": "Buah",
+      "hints": [
+        "Buah tropis",
+        "Rasanya manis",
+        "Berwarna kuning atau hijau",
+        "Sering dijadikan smoothie"
+      ]
+    },
+    {
+      "name": "Naga",
+      "category": "Mitos",
+      "hints": [
+        "Makhluk mitos",
+        "Mengeluarkan api",
+        "Berbentuk seperti ular dengan sayap",
+        "Sering muncul di cerita fantasi"
+      ]
+    },
+    {
+      "name": "Elang",
+      "category": "Hewan",
+      "hints": [
+        "Burung predator",
+        "Pandai terbang",
+        "Memiliki penglihatan tajam",
+        "Sering melambangkan kekuatan"
+      ]
+    },
+    {
+      "name": "Semangka",
+      "category": "Buah",
+      "hints": [
+        "Buah besar",
+        "Berwarna merah di dalam",
+        "Memiliki biji hitam",
+        "Segar dimakan saat cuaca panas"
+      ]
+    },
+    {
+      "name": "Laptop",
+      "category": "Teknologi",
+      "hints": [
+        "Perangkat komputer",
+        "Portabel",
+        "Memiliki keyboard dan layar",
+        "Digunakan untuk bekerja atau bermain"
+      ]
+    },
+    {
+      "name": "Robot",
+      "category": "Teknologi",
+      "hints": [
+        "Mesin pintar",
+        "Dapat diprogram",
+        "Bentuknya bervariasi",
+        "Dapat menggantikan pekerjaan manusia"
+      ]
+    },
+    {
+      "name": "Kanguru",
+      "category": "Hewan",
+      "hints": [
+        "Hewan dari Australia",
+        "Melompat tinggi",
+        "Memiliki kantung untuk anaknya",
+        "Hidup di padang rumput"
+      ]
+    },
+    {
+      "name": "Buaya",
+      "category": "Hewan",
+      "hints": [
+        "Reptil besar",
+        "Hidup di air dan darat",
+        "Memiliki kulit keras",
+        "Memakan daging"
+      ]
+    },
+    {
+      "name": "Bunga Matahari",
+      "category": "Tanaman",
+      "hints": [
+        "Menghadap matahari",
+        "Berwarna kuning",
+        "Bisa menghasilkan minyak",
+        "Biji bunga matahari bisa dimakan"
+      ]
+    },
+    {
+      "name": "Durian",
+      "category": "Buah",
+      "hints": [
+        "Buah berduri",
+        "Berbau khas",
+        "Dijuluki raja buah",
+        "Rasanya legit"
+      ]
+    },
+    {
+      "name": "Cokelat",
+      "category": "Makanan",
+      "hints": [
+        "Manis",
+        "Terbuat dari biji kakao",
+        "Sering dijadikan hadiah",
+        "Bisa berbentuk batang atau bubuk"
+      ]
+    },
+    {
+      "name": "Pisang",
+      "category": "Buah",
+      "hints": [
+        "Buah panjang",
+        "Berwarna kuning",
+        "Mudah dikupas",
+        "Sering dijadikan bahan kue"
+      ]
+    },
+    {
+      "name": "Smartphone",
+      "category": "Teknologi",
+      "hints": [
+        "Alat komunikasi modern",
+        "Layar sentuh",
+        "Bisa mengambil foto",
+        "Terhubung ke internet"
+      ]
+    },
+    {
+      "name": "Kopi",
+      "category": "Minuman",
+      "hints": [
+        "Minuman kafein",
+        "Berwarna hitam",
+        "Rasanya pahit",
+        "Sering diminum di pagi hari"
+      ]
+    },
+    {
+      "name": "Pesawat",
+      "category": "Transportasi",
+      "hints": [
+        "Kendaraan udara",
+        "Memiliki sayap",
+        "Dikendalikan pilot",
+        "Bisa terbang tinggi"
+      ]
+    },
+    {
+      "name": "Piano",
+      "category": "Alat Musik",
+      "hints": [
+        "Alat musik tuts",
+        "Berwarna hitam putih",
+        "Menghasilkan nada",
+        "Dimainkan dengan jari"
+      ]
+    },
+    {
+      "name": "Buku",
+      "category": "Benda",
+      "hints": [
+        "Media informasi",
+        "Terbuat dari kertas",
+        "Berisi tulisan",
+        "Untuk membaca"
+      ]
+    },
+    {
+      "name": "Kuda",
+      "category": "Hewan",
+      "hints": [
+        "Hewan berkaki empat",
+        "Dapat dikendarai",
+        "Hidup di padang rumput",
+        "Cepat berlari"
+      ]
+    },
+    {
+      "name": "Komodo",
+      "category": "Hewan",
+      "hints": [
+        "Hewan purba",
+        "Hanya ada di Indonesia",
+        "Reptil terbesar",
+        "Memiliki air liur beracun"
+      ]
+    },
+    {
+      "name": "Bawang Putih",
+      "category": "Tanaman",
+      "hints": [
+        "Digunakan sebagai bumbu",
+        "Berbau menyengat",
+        "Berwarna putih",
+        "Memiliki manfaat kesehatan"
+      ]
+    },
+    {
+      "name": "Pepaya",
+      "category": "Buah",
+      "hints": [
+        "Buah tropis",
+        "Berwarna oranye",
+        "Memiliki biji hitam",
+        "Baik untuk pencernaan"
+      ]
+    },
+    {
+      "name": "Angsa",
+      "category": "Hewan",
+      "hints": [
+        "Burung air",
+        "Berwarna putih",
+        "Memiliki leher panjang",
+        "Sering ditemukan di danau"
+      ]
+    },
+    {
+      "name": "Kereta Api",
+      "category": "Transportasi",
+      "hints": [
+        "Berjalan di rel",
+        "Dapat mengangkut banyak orang",
+        "Digunakan untuk perjalanan jauh",
+        "Menggunakan lokomotif"
+      ]
+    },
+    {
+      "name": "Pohon Kelapa",
+      "category": "Tanaman",
+      "hints": [
+        "Tinggi",
+        "Memiliki buah kelapa",
+        "Tumbuh di pantai",
+        "Bisa digunakan untuk berbagai keperluan"
+      ]
+    },
+    {
+      "name": "Harimau",
+      "category": "Hewan",
+      "hints": [
+        "Karnivora",
+        "Berbulu belang",
+        "Cepat dan kuat",
+        "Hidup di hutan"
+      ]
+    },
+    {
+      "name": "Lumba-lumba",
+      "category": "Hewan",
+      "hints": [
+        "Hidup di laut",
+        "Mamalia",
+        "Pintar dan ramah",
+        "Dapat melompat dari air"
+      ]
+    },
+    {
+      "name": "Sepeda",
+      "category": "Transportasi",
+      "hints": [
+        "Kendaraan beroda dua",
+        "Digerakkan dengan pedal",
+        "Ramah lingkungan",
+        "Baik untuk olahraga"
+      ]
+    },
+    {
+      "name": "Nasi Goreng",
+      "category": "Makanan",
+      "hints": [
+        "Makanan khas Indonesia",
+        "Terbuat dari nasi",
+        "Dimasak dengan bumbu",
+        "Biasa dimakan dengan telur"
+      ]
+    },
+    {
+      "name": "Gunung",
+      "category": "Alam",
+      "hints": [
+        "Bentukan alam tinggi",
+        "Bisa mengeluarkan lava",
+        "Tempat pendakian",
+        "Puncaknya sering berawan"
+      ]
+    },
+    {
+      "name": "Pensil",
+      "category": "Alat Tulis",
+      "hints": [
+        "Alat untuk menulis",
+        "Terbuat dari kayu dan grafit",
+        "Bisa dihapus",
+        "Perlu diraut"
+      ]
+    },
+    {
+      "name": "Televisi",
+      "category": "Elektronik",
+      "hints": [
+        "Menampilkan gambar bergerak",
+        "Ada di ruang keluarga",
+        "Untuk hiburan",
+        "Memiliki remote control"
+      ]
+    }
+  ]
+}

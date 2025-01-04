@@ -1,0 +1,12 @@
+{
+  "items": [
+    {
+      "name": "Pedang Legendaris",
+      "description": "Pedang kuno dengan kekuatan magis",
+      "startPrice": 1000,
+      "minBidIncrement": 100,
+      "image": "https://example.com/items/sword.png",
+      "rarity": "legendary"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "data": [
+    {
+      "url": "https://example.com/gambar1.jpg",
+      "answer": "Kucing",
+      "hint": "Hewan peliharaan yang suka makan ikan"
+    },
+    {
+      "url": "https://example.com/gambar2.jpg",
+      "answer": "Mobil",
+      "hint": "Kendaraan beroda empat"
+    }
+  ]
+}

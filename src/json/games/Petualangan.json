@@ -1,0 +1,18 @@
+{
+  "scenes": [
+    {
+      "id": "start",
+      "description": "Kamu berada di hutan gelap",
+      "options": [
+        {
+          "text": "Jalan ke kiri",
+          "nextScene": "left_path"
+        },
+        {
+          "text": "Jalan ke kanan",
+          "nextScene": "right_path"
+        }
+      ]
+    }
+  ]
+}

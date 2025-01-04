@@ -1,0 +1,12 @@
+[
+  {
+    "command": "Tepuk tangan 3 kali",
+    "isSimonSays": true,
+    "points": 5
+  },
+  {
+    "command": "Loncat sekali",
+    "isSimonSays": false,
+    "points": 5
+  }
+]

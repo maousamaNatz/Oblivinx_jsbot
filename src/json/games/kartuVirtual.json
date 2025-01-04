@@ -1,0 +1,26 @@
+{
+  "uno": {
+    "cards": [
+      {
+        "type": "number",
+        "color": "red",
+        "value": 0,
+        "image": "https://example.com/cards/red_0.png"
+      }
+    ],
+    "rules": {
+      "maxPlayers": 10,
+      "initialCards": 7
+    }
+  },
+  "blackjack": {
+    "cards": [
+      {
+        "suit": "hearts",
+        "value": "A",
+        "points": 11,
+        "image": "https://example.com/cards/hearts_a.png"
+      }
+    ]
+  }
+}

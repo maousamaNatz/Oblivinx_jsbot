@@ -1,0 +1,14 @@
+{
+  "starters": [
+    {
+      "text": "Pada suatu hari di sebuah desa kecil...",
+      "genre": "petualangan",
+      "maxPlayers": 10
+    }
+  ],
+  "rules": {
+    "maxWordsPerTurn": 15,
+    "timePerTurn": 60,
+    "minPlayers": 2
+  }
+}

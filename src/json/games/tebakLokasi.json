@@ -1,0 +1,13 @@
+[
+  {
+    "id": 1,
+    "imageUrl": "https://example.com/locations/borobudur.jpg",
+    "answer": "Borobudur",
+    "hints": [
+      "Candi terbesar di Indonesia",
+      "Terletak di Jawa Tengah",
+      "Dibangun pada abad ke-8"
+    ],
+    "category": "wisata"
+  }
+]

@@ -1,8 +1,15 @@
 # Sessions
-sessions/
-.session/
-*session*/
-baileys_store.json
+sessions/*
+!sessions/.gitkeep
+auth_info_baileys/
+*.session.json
+creds.json
+pre-key-*
+sender-key-*
+app-state-sync-key-*
+session-*
+multi-device-*
+baileys_store_*
 store/
-node_modules
+node_modules/
 package-lock.json

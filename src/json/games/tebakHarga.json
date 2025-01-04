@@ -1,0 +1,9 @@
+[
+  {
+    "name": "iPhone 15 Pro",
+    "imageUrl": "https://example.com/products/iphone15.jpg",
+    "price": 15000000,
+    "category": "elektronik",
+    "tolerance": 1000000
+  }
+]

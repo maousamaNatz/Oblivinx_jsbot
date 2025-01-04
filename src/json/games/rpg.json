@@ -1,0 +1,44 @@
+{
+    "data": {
+        "characters": {
+            "classes": {
+                "WARRIOR": {
+                    "name": "Warrior",
+                    "baseStats": {
+                        "health": 150,
+                        "mana": 50,
+                        "attack": 15,
+                        "defense": 10
+                    }
+                },
+                "ARCHER": {
+                    "name": "Archer",
+                    "baseStats": {
+                        "health": 100,
+                        "mana": 70,
+                        "attack": 20,
+                        "defense": 5
+                    }
+                },
+                "MAGE": {
+                    "name": "Mage",
+                    "baseStats": {
+                        "health": 80,
+                        "mana": 150,
+                        "attack": 25,
+                        "defense": 3
+                    }
+                },
+                "ROGUE": {
+                    "name": "Rogue",
+                    "baseStats": {
+                        "health": 90,
+                        "mana": 60,
+                        "attack": 22,
+                        "defense": 4
+                    }
+                }
+            }
+        }
+    }
+}

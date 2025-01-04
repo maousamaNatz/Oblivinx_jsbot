@@ -81,6 +81,7 @@
   "dependencies": {
     "@whiskeysockets/baileys": "^6.7.9",
     "@yemreak/yt-dlp": "^1.1.5",
+    "acrcloud": "^1.4.0",
     "axios": "^1.7.9",
     "cheerio": "^1.0.0",
     "crypto": "^1.0.1",
