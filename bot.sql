@@ -1,11 +1,11 @@
 -- Tabel untuk pengguna
 CREATE TABLE `users` (
   `id` INT(11) NOT NULL AUTO_INCREMENT,
-  `user_id` VARCHAR(255) NOT NULL UNIQUE, // berisi phone number user
-  `username` VARCHAR(255) DEFAULT NULL, // berisi username user
+  `user_id` VARCHAR(255) NOT NULL UNIQUE, -- berisi phone number user
+  `username` VARCHAR(255) DEFAULT NULL, -- berisi username user
   `is_premium` TINYINT(1) DEFAULT 0, 
-  `is_banned` TINYINT(1) DEFAULT 0, // di gunakan untuk apakah user di banned atau tidak oleh admin
-  `is_blocked` TINYINT(1) DEFAULT 0, // di gunakan untuk user apakah di blockir oleh bot
+  `is_banned` TINYINT(1) DEFAULT 0, -- di gunakan untuk apakah user di banned atau tidak oleh admin
+  `is_blocked` TINYINT(1) DEFAULT 0, -- di gunakan untuk user apakah di blockir oleh bot
   `coins` INT(11) DEFAULT 0,
   `experience` INT(11) DEFAULT 0,
   `level` INT(11) DEFAULT 1,
@@ -26,8 +26,8 @@ CREATE TABLE `users` (
   `auto_sticker` TINYINT(1) DEFAULT 0,
   `log_detection` TINYINT(1) DEFAULT 0,
   `auto_level_up` TINYINT(1) DEFAULT 0,
-  `mute_bot` TINYINT(1) DEFAULT 0, // di gunakan untuk mengecek apakah bot di mute atau tidak oleh user
-  `warnings` INT(11) DEFAULT 0, // di gunakan untuk mengecek apakah user di warn atau tidak oleh bot
+  `mute_bot` TINYINT(1) DEFAULT 0, -- di gunakan untuk mengecek apakah bot di mute atau tidak oleh user
+  `warnings` INT(11) DEFAULT 0, -- di gunakan untuk mengecek apakah user di warn atau tidak oleh bot
   `created_at` TIMESTAMP NOT NULL DEFAULT current_timestamp(),
   `updated_at` TIMESTAMP NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`)

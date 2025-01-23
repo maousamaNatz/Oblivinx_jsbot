@@ -7,12 +7,14 @@ const { HttpsProxyAgent } = require("https-proxy-agent");
 const fs = require("fs");
 const acrcloud = require("acrcloud");
 const FileManager = require("../../config/memoryAsync/readfile");
+const { promisify } = require('util');
+const sleep = promisify(setTimeout);
 
 Oblixn.cmd({
   name: "weather",
   alias: ["cuaca"],
   desc: "🌤 Mendapatkan informasi cuaca untuk lokasi tertentu",
-  category: "tools",
+  category: "general",
   async exec(msg, { args }) {
     try {
       const city = args.join(" ");
@@ -63,7 +65,7 @@ Oblixn.cmd({
   name: "wiki",
   alias: ["wikipedia"],
   desc: "🔍 Mencari informasi dari Wikipedia",
-  category: "tools",
+  category: "search",
   async exec(msg, { args }) {
     try {
       if (!args || args.length === 0) {
@@ -140,7 +142,7 @@ Oblixn.cmd({
   name: "pinterest",
   alias: ["pin"],
   desc: "🖼️ Mencari gambar di Pinterest",
-  category: "tools",
+  category: "search",
   async exec(msg, { args }) {
     if (!args.length) return msg.reply("❌ Masukkan kata kunci pencarian!");
     const query = args.join(" ");
@@ -200,12 +202,12 @@ Oblixn.cmd({
   name: "gempa",
   alias: ["infogempa", "gempabumi"],
   desc: "🌋 Menampilkan informasi gempa terkini dari BMKG",
-  category: "info",
+  category: "search",
   async exec(msg) {
     try {
       const waitMessage = await msg.reply(
         "⏳ Sedang mengambil data gempa terkini..."
-      );
+      );  
 
       const scraper = new GempaScraper();
       const gempaData = await scraper.getGempaTerkini();
@@ -360,48 +362,48 @@ async function broadcastGempaPesan(msg, data) {
 }
 
 async function downloadImage(url, retries = 3) {
-  try {
-    const headers = {
-      "User-Agent":
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-      Accept:
-        "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
-      "Accept-Language": "en-US,en;q=0.9",
-      Referer: "https://www.pinterest.com/",
-      "sec-ch-ua": '"Google Chrome";v="91", "Chromium";v="91"',
-      "sec-ch-ua-mobile": "?0",
-      "sec-fetch-dest": "image",
-      "sec-fetch-mode": "no-cors",
-      "sec-fetch-site": "cross-site",
-    };
+  for (let attempt = 0; attempt < retries; attempt++) {
+    try {
+      const response = await axios({
+        method: 'GET',
+        url: url,
+        responseType: 'arraybuffer',
+        timeout: 15000, // 15 detik timeout
+        maxContentLength: 10 * 1024 * 1024, // 10MB max
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        },
+        // Gunakan proxy jika diperlukan
+        /* proxy: {
+          host: 'proxy.example.com',
+          port: 8080
+        } */
+      });
 
-    // Gunakan free proxy (ganti dengan proxy yang aktif)
-    const proxy = {
-      protocol: "http",
-      host: "185.199.108.150",
-      port: 4145,
-    };
-
-    const httpsAgent = new HttpsProxyAgent(
-      `http://${proxy.host}:${proxy.port}`
-    );
-
-    const response = await axios.get(url, {
-      headers,
-      responseType: "arraybuffer",
-      httpsAgent,
-      timeout: 15000,
-      maxRedirects: 5,
-    });
-
-    return response.data;
-  } catch (error) {
-    if (retries > 0) {
-      console.log(`Retrying download... (${retries} attempts left)`);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      return downloadImage(url, retries - 1);
+      return response.data;
+    } catch (error) {
+      console.error(`Download attempt ${attempt + 1} failed:`, error.message);
+      
+      if (attempt === retries - 1) {
+        throw new Error(`Download error: ${error.message}`);
+      }
+      
+      // Tunggu sebentar sebelum retry
+      await sleep(2000 * (attempt + 1)); // Exponential backoff
     }
-    throw new Error(`Download error: ${error.message}`);
+  }
+}
+
+// Tambahkan fungsi validasi URL
+function isValidImageUrl(url) {
+  try {
+    const parsed = new URL(url);
+    const ext = parsed.pathname.toLowerCase();
+    return ['.jpg', '.jpeg', '.png', '.gif', '.webp'].some(validExt => 
+      ext.endsWith(validExt)
+    );
+  } catch {
+    return false;
   }
 }
 
@@ -409,7 +411,7 @@ Oblixn.cmd({
   name: "shazam",
   alias: ["detectmusic", "findmusic"],
   desc: "🎵 Mendeteksi judul lagu dari file audio/video",
-  category: "tools",
+  category: "converter",
   async exec(msg, { args }) {
     try {
       const mime = msg.mimetype || "";

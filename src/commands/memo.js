@@ -32,7 +32,7 @@ Oblixn.cmd({
             ).join('\n');
             
             const systemStats = {   
-                cpu: os.loadavg()[0],
+                cpu: os.loadavg()[0],       
                 laptop: os.hostname(),
                 totalMemory: (os.totalmem() / 1024 / 1024 / 1024).toFixed(2), // GB
                 freeMemory: (os.freemem() / 1024 / 1024 / 1024).toFixed(2), // GB

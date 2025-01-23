@@ -3,7 +3,7 @@
   "version": "0.0.4",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha test.js",
     "start": "node bot.js",
     "dev": "nodemon --config nodemon.json bot.js",
     "prod": "pm2 start bot.js --name whatsapp-bot",
@@ -107,5 +107,9 @@
     "uuid": "^11.0.3",
     "wikipedia": "^2.1.2",
     "youtube-dl-exec": "^3.0.10"
+  },
+  "devDependencies": {
+    "chai": "^5.1.2",
+    "mocha": "^11.1.0"
   }
 }

@@ -287,17 +287,8 @@ async function startConnection() {
         // Tentukan jenis chat dan ambil ID pengirim yang benar
         const isGroup = sender.endsWith("@g.us");
         const participant = msg.key.participant || msg.participant || sender;
-
         // Ambil nomor pengirim yang benar
         let senderNumber = (isGroup ? participant : sender).split("@")[0];
-
-        // Log untuk debugging
-        console.log("Processing message from:", {
-          senderNumber,
-          isGroup,
-          participant,
-        });
-
         // Normalisasi nomor telepon
         if (senderNumber.startsWith("62")) {
           // Cek apakah ini nomor telepon valid (bukan ID grup atau sistem)
@@ -428,7 +419,6 @@ async function startConnection() {
             bannedBy,
             banType,
           ]);
-          console.log(`User ${cleanUserId} banned successfully`);
           return result;
         } catch (error) {
           console.error(`Error in banUser: ${error.message}`);

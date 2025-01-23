@@ -1,135 +1,191 @@
-// Command untuk menampilkan menu utama RPG
-const showMainMenu = async (msg) => {
-  return await msg.reply(`🎮 *RPG Game Commands*
-  
-  !rpg start <class> - Buat karakter baru
-  !rpg profile - Lihat status karakter
-  !rpg inventory - Lihat inventory
-  !rpg help - Tampilkan bantuan
-  
-  Available Classes:
-  ⚔️ Warrior - High HP & Defense
-  🔮 Mage - High MP & Magic Attack  
-  🏹 Archer - High Speed & Critical`);
+const fs = require('fs');
+const path = require('path');
+
+// Import data RPG
+const rpgData = require('../json/games/rpg.json');
+const rpgUsersPath = path.join(__dirname, '../json/users/rpg_player.json');
+let rpgUsers = require('../json/users/rpg_player.json');
+
+// Helper function untuk menyimpan data user
+const saveUserData = () => {
+    fs.writeFileSync(rpgUsersPath, JSON.stringify(rpgUsers, null, 2));
 };
 
-// Command untuk membuat karakter baru
-const createCharacter = async (msg, args) => {
-  const { sender, pushName } = msg;
-  const className = args[1]?.toLowerCase();
-  
-  if (!className || !["warrior", "mage", "archer"].includes(className)) {
-    return await msg.reply(
-      "❌ Pilih class: warrior/mage/archer\nContoh: !rpg start warrior"
-    );
-  }
+// Command RPG Start
+global.Oblixn.cmd({
+    name: "rpgstart",
+    alias: ["rpgstart"],
+    desc: "Memulai permainan RPG",
+    category: "games",
+    async exec(msg, args) {
+        try {
+            // Pastikan args selalu ada dengan nilai default array kosong
+            args = args || [];
+            
+            // Cek apakah user sudah terdaftar
+            const userId = msg.sender;
+            
+            // Tambahkan validasi data
+            if (!userId) {
+                return msg.reply("❌ Gagal mendapatkan ID pengguna");
+            }
 
-  const player = {
-    userId: sender,
-    name: pushName,
-    className: className,
-    level: 1,
-    exp: 0,
-    gold: 0,
-    stats: getBaseStats(className),
-  };
+            // Perbaikan untuk mendapatkan sender ID
+            const sender = msg.sender || msg.senderNumber;
+            const pushName = msg.pushName || "Player";
 
-  return await msg.reply(`✅ Karakter berhasil dibuat!
-Class: ${className}
-Level: ${player.level}
-HP: ${player.stats.hp}
-MP: ${player.stats.mp}`);
-};
+            // Inisialisasi users jika belum ada
+            if (!rpgUsers.users) {
+                rpgUsers.users = {};
+            }
 
-// Command untuk melihat profil karakter
-const showProfile = async (msg) => {
-  const { pushName } = msg;
-  const profile = {
-    name: pushName,
-    className: "warrior", 
-    level: 1,
-    exp: 0,
-    gold: 0,
-    stats: {
-      hp: 100,
-      mp: 50,
-      attack: 15,
-      defense: 10,
-      speed: 8,
-    },
-  };
+            // Cek apakah user sudah memiliki karakter
+            if (rpgUsers.users[sender]) {
+                return await msg.reply('❌ Kamu sudah memiliki karakter!');
+            }
 
-  return await msg.reply(`📊 *Status Karakter*
-Nama: ${profile.name}
-Class: ${profile.className}
-Level: ${profile.level}
-EXP: ${profile.exp}
-Gold: ${profile.gold}
+            const className = args[0]?.toUpperCase();
+            if (!className || !rpgData.data.characters.classes[className]) {
+                return await msg.reply('❌ Pilih class: WARRIOR/ARCHER/MAGE/ROGUE\nContoh: !rpgstart WARRIOR');
+            }
+
+            const classData = rpgData.data.characters.classes[className];
+            rpgUsers.users[sender] = {
+                name: pushName,
+                class: className,
+                level: 1,
+                exp: 0,
+                gold: 100,
+                stats: { ...classData.baseStats },
+                inventory: {
+                    items: [],
+                    equipment: {
+                        weapon: null,
+                        armor: null,
+                        accessory: null
+                    }
+                },
+                skills: [],
+                lastActivity: new Date().toISOString()
+            };
+
+            saveUserData();
+
+            await msg.reply(`✅ Karakter berhasil dibuat!
+Class: ${classData.name}
+Level: 1
+HP: ${classData.baseStats.health}
+MP: ${classData.baseStats.mana}
+Attack: ${classData.baseStats.attack}
+Defense: ${classData.baseStats.defense}`);
+        } catch (error) {
+            console.error("RPG Start Error:", error);
+            return msg.reply("❌ Terjadi kesalahan saat memulai RPG. Silakan coba lagi.");
+        }
+    }
+});
+
+// Command RPG Profile
+Oblixn.cmd({
+    name: "rpgprofile",
+    alias: ["profile", "status"],
+    desc: "Melihat status karakter RPG",
+    category: "games",
+    isLimit: true,
+    async exec(msg, sock, args) {
+        const sender = msg.sender || msg.senderNumber;
+        
+        try {
+            if (!rpgUsers.users) {
+                rpgUsers.users = {};
+            }
+
+            const userData = rpgUsers.users[sender];
+            if (!userData) {
+                return await msg.reply('❌ Kamu belum memiliki karakter! Ketik !rpgstart untuk membuat karakter');
+            }
+
+            await msg.reply(`📊 *Status Karakter*
+Nama: ${userData.name}
+Class: ${rpgData.data.characters.classes[userData.class].name}
+Level: ${userData.level}
+EXP: ${userData.exp}
+Gold: ${userData.gold}
 
 Stats:
-❤️ HP: ${profile.stats.hp}
-💫 MP: ${profile.stats.mp}
-⚔️ Attack: ${profile.stats.attack}
-🛡️ Defense: ${profile.stats.defense}
-🏃 Speed: ${profile.stats.speed}`);
-};
-
-// Command untuk menampilkan bantuan
-const showHelp = async (msg) => {
-  return await msg.reply(`🎮 *RPG Game Commands*
-  
-  !rpg start <class> - Buat karakter baru
-  !rpg profile - Lihat status karakter
-  !rpg inventory - Lihat inventory
-  !rpg help - Tampilkan bantuan
-  
-  Available Classes:
-  ⚔️ Warrior - High HP & Defense
-  🔮 Mage - High MP & Magic Attack  
-  🏹 Archer - High Speed & Critical`);
-};
-
-// Helper function untuk mendapatkan base stats berdasarkan class
-function getBaseStats(className) {
-  const stats = {
-    warrior: { hp: 100, mp: 50, attack: 15, defense: 10, speed: 8 },
-    mage: { hp: 70, mp: 100, attack: 8, defense: 5, speed: 7 },
-    archer: { hp: 80, mp: 60, attack: 12, defense: 7, speed: 12 },
-  };
-  return stats[className];
-}
-
-// Main RPG Command Handler
-Oblixn.cmd({
-  name: "rpg",
-  alias: ["rpg", "game"],
-  desc: "RPG Game Commands",
-  category: "games", 
-  isLimit: true,
-  async exec(msg, sock, args) {
-    try {
-      if (!args.length) {
-        return await showMainMenu(msg);
-      }
-
-      const command = args[0].toLowerCase();
-
-      switch (command) {
-        case "start":
-          return await createCharacter(msg, args);
-        case "profile":
-        case "status":
-          return await showProfile(msg);
-        case "help":
-          return await showHelp(msg);
-        default:
-          return await msg.reply(
-            "❌ Command tidak valid. Ketik !rpg help untuk melihat command yang tersedia"
-          );
-      }
-    } catch (error) {
-      console.error("RPG Command Error:", error);
-      await msg.reply("❌ Terjadi kesalahan sistem. Silakan coba lagi nanti.");
+❤️ HP: ${userData.stats.health}
+💫 MP: ${userData.stats.mana}
+⚔️ Attack: ${userData.stats.attack}
+🛡️ Defense: ${userData.stats.defense}`);
+        } catch (error) {
+            console.error('RPG Profile Error:', error);
+            await msg.reply('❌ Terjadi kesalahan sistem. Silakan coba lagi nanti.');
+        }
     }
-  },
+});
+
+// Command RPG Inventory
+Oblixn.cmd({
+    name: "rpginventory",
+    alias: ["inventory", "inv"],
+    desc: "Melihat inventory karakter RPG",
+    category: "games",
+    isLimit: true,
+    async exec(msg, sock, args) {
+        const sender = msg.sender || msg.senderNumber;
+        
+        try {
+            if (!rpgUsers.users) {
+                rpgUsers.users = {};
+            }
+
+            const userInv = rpgUsers.users[sender];
+            if (!userInv) {
+                return await msg.reply('❌ Kamu belum memiliki karakter!');
+            }
+
+            const equipment = userInv.inventory.equipment;
+            const items = userInv.inventory.items;
+
+            await msg.reply(`🎒 *Inventory*
+Equipment:
+⚔️ Weapon: ${equipment.weapon || 'None'}
+🛡️ Armor: ${equipment.armor || 'None'}
+💍 Accessory: ${equipment.accessory || 'None'}
+
+Items:
+${items.length > 0 ? items.map(item => `- ${item}`).join('\n') : 'Empty'}`);
+        } catch (error) {
+            console.error('RPG Inventory Error:', error);
+            await msg.reply('❌ Terjadi kesalahan sistem. Silakan coba lagi nanti.');
+        }
+    }
+});
+
+// Command RPG Help
+Oblixn.cmd({
+    name: "rpghelp",
+    alias: ["rpgmenu"],
+    desc: "Menampilkan bantuan RPG game",
+    category: "games",
+    isLimit: true,
+    async exec(msg, sock, args) {
+        try {
+            await msg.reply(`🎮 *RPG Game Commands*
+
+!rpgstart <class> - Buat karakter baru
+!rpgprofile - Lihat status karakter
+!rpginventory - Lihat inventory
+!rpghelp - Tampilkan bantuan
+
+Available Classes:
+⚔️ Warrior - Tank & Defense
+🏹 Archer - Range & Critical
+🔮 Mage - Magic & Burst Damage
+🗡️ Rogue - Speed & Agility`);
+        } catch (error) {
+            console.error('RPG Help Error:', error);
+            await msg.reply('❌ Terjadi kesalahan sistem. Silakan coba lagi nanti.');
+        }
+    }
 });

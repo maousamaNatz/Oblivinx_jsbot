@@ -38,7 +38,7 @@ class FileManager {
     async saveFile(buffer, originalName, type) {
         try {
             const directory = this.directories[type] || 'temp';
-            const fileName = this.generateFileName(originalName, type);
+                const fileName = this.generateFileName(originalName, type);
             const filePath = path.join(this.baseDir, directory, fileName);
 
             await fs.promises.writeFile(filePath, buffer);

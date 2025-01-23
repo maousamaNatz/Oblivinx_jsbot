@@ -106,6 +106,20 @@ const pinterestCookies = [
 // Buat cache untuk retry counter
 const msgRetryCounterCache = new Map();
 
+// Tambahkan konfigurasi cache
+const cacheConfig = {
+  enabled: true,
+  ttl: 300, // 5 menit
+  maxSize: 1000 // Maksimum item dalam cache
+}
+
+// Tambahkan memory monitoring
+const memoryMonitor = {
+  checkInterval: 60000, // Cek setiap 1 menit
+  maxMemoryUsage: 0.8, // 80% dari total memory
+  gcThreshold: 0.7 // Jalankan GC pada 70% usage
+}
+
 // Konfigurasi bot
 const config = {
   gameData: {
@@ -209,6 +223,13 @@ const config = {
       filter: "audioandvideo",
     },
   },
+  nsfw: {
+    enabled: true,
+    threshold: 0.7,
+    deleteMessage: true,
+    warnUser: true,
+    logDetections: true
+  }
 };
 
 // Buat direktori jika belum ada
