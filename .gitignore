@@ -1,19 +1,29 @@
 # Sessions
-sessions/*
-!sessions/.gitkeep
+sessions/
 auth_info_baileys/
 *.session.json
 creds.json
 pre-key-*
 sender-key-*
 app-state-sync-key-*
-session-*
 multi-device-*
 baileys_store_*
-store/
+/store/
+
+# Logs
+logs/
+!logs/.gitkeep
+*.log
+
+# Dependencies
 node_modules/
 package-lock.json
 
-# Logs Winston
-*.log
-!utils/logger.js
+# System Files
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+*.env.local
+.npmrc
