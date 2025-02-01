@@ -4,242 +4,211 @@
   <img src="assets/logo.svg" alt="Logo Chatbot WhatsApp" width="200"/>
   
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-  [![Node.js Version](https://img.shields.io/badge/Node.js-16.x-green.svg)](https://nodejs.org/)
-  [![MySQL Version](https://img.shields.io/badge/MySQL-8.0-blue.svg)](https://www.mysql.com/)
+  [![Node.js Version](https://img.shields.io/badge/Node.js-16.x+-green.svg)](https://nodejs.org/)
+  [![MySQL Version](https://img.shields.io/badge/MySQL-8.0+-blue.svg)](https://www.mysql.com/)
 </div>
 
-Bot WhatsApp yang dibuat menggunakan [Baileys](https://github.com/WhiskeySockets/Baileys) dan Node.js dengan berbagai fitur menarik.
+Bot WhatsApp canggih berbasis Node.js menggunakan [Baileys](https://github.com/WhiskeySockets/Baileys) dengan fitur AI terintegrasi dan manajemen grup otomatis.
 
 ## 📑 Daftar Isi
-- [Fitur Utama](#fitur-utama)
-- [Persyaratan](#persyaratan)
-- [Instalasi](#instalasi)
-- [Konfigurasi](#konfigurasi)
-- [Penggunaan](#penggunaan)
-- [Rules & Guidelines](#rules--guidelines)
-- [FAQ](#faq)
-- [Tim Pengembang](#tim-pengembang)
-- [Changelog](#changelog)
-- [Lisensi](#lisensi)
+- [Fitur Utama](#-fitur-utama)
+- [Persyaratan](#-persyaratan)
+- [Instalasi](#-instalasi)
+- [Konfigurasi](#-konfigurasi)
+- [Penggunaan](#-penggunaan)
+- [Pedoman Pengembangan](#-pedoman-pengembangan)
+- [FAQ](#-faq)
+- [Tim Pengembang](#-tim-pengembang)
+- [Pembaruan](#-pembaruan)
+- [Lisensi](#-lisensi)
+- [Kontribusi](#-kontribusi)
+- [Kontak](#-kontak)
 
 ## 🚀 Fitur Utama
 
-### 🤖 AI Integration
-- **GPT Integration**
-  - Support GPT-3.5-turbo
-  - Support GPT-4
-  - Custom prompt templates
+### 🤖 Integrasi AI
+- **Model GPT**
+  - Dukungan GPT-3.5-turbo & GPT-4
+  - Template prompt kustom
+  - Manajemen memori percakapan
   
-- **Claude & Gemini**
+- **Multimodel AI**
   - Claude Instant & Claude 2
   - Gemini Pro
-  - Custom AI responses
+  - Model NATZ v2.0
 
-- **Custom Models**
-  - NATZ Model v2.0
-  - O1 Language Processing
-  - Copilot integration
+### 👥 Manajemen Grup
+- Sistem anti-spam dengan ML
+- Filter link otomatis + whitelist
+- Pesan selamat datang/perpisahan
+- Statistik aktivitas grup
+- Pembuat polling & broadcast
 
-### 👥 Group Management
-- Anti-spam system dengan machine learning
-- Anti-link dengan whitelist
-- Welcome & goodbye message customizable
-- Auto-kick inactive members
-- Group statistics & analytics
-- Broadcast messages
-- Poll creator
-
-### 🛠 Tools & Utilities
-- Real-time earthquake information
-- Social media downloader
+### 🛠 Alat Bantu
+- Pencarian Wikipedia multi-bahasa
+- Konverter mata uang & prakiraan cuaca
+- Downloader media sosial:
   - YouTube (video/audio)
-  - TikTok (no watermark)
-  - Instagram (posts/reels/stories)
+  - TikTok tanpa watermark
+  - Instagram (post/reels/story)
   - Pinterest
-- Wikipedia search dengan multiple bahasa
-- Weather forecast
-- Currency converter
-- URL shortener
 
-### 🎮 Fun Features
-- RPG Games
-- Quiz & Trivia
-- Memo & Notes
-- Sticker creator
-- Text to speech
-- Random memes
+### 🎮 Fitur Hiburan
+- Game RPG & kuis interaktif
+- Pembuat stiker otomatis
+- Text-to-Speech (25+ bahasa)
+- Generator meme acak
+- Sistem memo & catatan grup
 
 ## 💻 Persyaratan
 
-- Node.js v16.x atau lebih tinggi
-- MySQL v8.0 atau lebih tinggi
-- Redis (opsional, untuk caching)
-- PM2 (untuk production)
-- oblixn.cmd v2.5 atau lebih tinggi
+- Node.js v16.x atau lebih baru
+- MySQL v8.0 atau lebih baru
+- Redis (direkomendasikan untuk caching)
+- PM2 untuk environment production
+- Git & CLI dasar
 
 ## 📥 Instalasi
 
-1. Clone repository
+1. Clone repositori
 ```bash
 git clone https://github.com/maousamaNatz/boring1.git
 cd Chatbot_whatsapp
 ```
 
-2. Install dependencies
+2. Install dependensi
 ```bash
 npm install
 ```
 
-3. Setup oblixn.cmd
-```bash
-# Install oblixn.cmd globally
-npm install -g oblixn.cmd
-
-# Initialize oblixn configuration
-oblixn init
-```
-
-4. Konfigurasi environment
+3. Setup environment
 ```bash
 cp .env.example .env
 ```
 
-5. Setup database
+4. Inisialisasi database
 ```bash
-# Create database tables
 npm run migrate
-
-# Seed initial data
 npm run seed
+```
+
+5. Jalankan bot
+```bash
+# Mode development
+npm run dev
+
+# Mode production
+npm run prod
 ```
 
 ## ⚙️ Konfigurasi
 
-### Environment Variables
+### Variabel Environment (.env)
 ```env
 # Database
 DB_HOST=localhost
 DB_USER=root
-DB_PASS=password
-DB_NAME=whatsapp_bot
+DB_PASSWORD=
+DB_NAME=bot_whatsapp
 
-# API Keys
-OPENAI_API_KEY=your_key_here
-CLAUDE_API_KEY=your_key_here
-GEMINI_API_KEY=your_key_here
-
-# Bot Config
-OWNER_NUMBER=628xxxxxxxxxx
-BOT_NAME=NatzBot
+# WhatsApp
+OWNER_NUMBER_ONE=081910058235
+OWNER_NUMBER_TWO=083156981865
 PREFIX=!
+
+# AI
+ENDPOINT_PROVIDER=https://heckerai.com/v1/chat/completions
+PROVIDER_API_KEY=kunci_anda_disini
 ```
 
-### oblixn.cmd Configuration
-```json
-{
-  "name": "whatsapp-bot",
-  "version": "1.0.0",
-  "commands": {
-    "dev": "nodemon index.js",
-    "prod": "pm2 start index.js",
-    "lint": "eslint ."
-  }
-}
+### Konfigurasi Tambahan
+- Simpan file session di `./sessions`
+- File game & template di `./src/json/games`
+- Backup otomatis setiap 1 jam ke `./store`
+
+## 📝 Pedoman Pengembangan
+
+### Struktur Kode
+```
+/src
+  /handlers   # Command handlers
+  /utils      # Utilities & helpers
+  /json       # Data templates
+  /middleware # Sistem middleware
 ```
 
-## 📝 Rules & Guidelines
-
-### Code Style
+### Aturan Kode
 - Gunakan ESLint dengan konfigurasi standar
-- Ikuti format oblixn.cmd untuk command execution
-- Dokumentasi wajib untuk setiap fungsi
-- Unit test untuk fitur utama
+- Dokumentasi wajib untuk fungsi kompleks
+- Test unit minimal 70% coverage
+- Komit mengikuti konvensi Conventional Commits
 
-### Git Workflow
-1. Create feature branch
-2. Develop & test locally
-3. Submit pull request
-4. Code review
-5. Merge ke main branch
-
-### Security Guidelines
-- No API keys in code
-- Validate semua input user
-- Rate limiting untuk API calls
-- Enkripsi data sensitif
+### Keamanan
+- Validasi semua input pengguna
+- Enkripsi data sensitif dengan AES-256
+- Rate limiting untuk API eksternal
+- Audit keamanan mingguan
 
 ## 👥 Tim Pengembang
 
-- **MaosamaNatz** - [GitHub](https://github.com/maousamaNatz)
-  - Project Founder
-  - System Architecture
-  - Core Development
+**Project Lead**  
+- **Rio Belly** - [GitHub](https://github.com/RioBelly)  
+  `Owner | Arsitektur Sistem`
 
-### Owner
-- **Resan** - [GitHub](https://github.com/resan751)
-  - Owner Bot
-  - System Architecture
-  - Core Development
+- **Bagas Saputra** - [GitHub](https://github.com/BagasSaputra)  
+  `Owner | Core Developer`
 
-- **Bagas** 
-  - Owner Bot
-  - System Architecture
-  - Core Development
+**Core Team**  
+- **MaousamaNatz** - [GitHub](https://github.com/maousamaNatz)  
+  `Lead Backend Developer`
 
-### Lead Developers
-- **MaousamaNatz** - [GitHub](https://github.com/maousamaNatz)
-- **RehanPratama** - [GitHub](https://github.com/Rehanpratama)
-- **SkyDcode** - [GitHub](https://github.com/SkyyDcode)
+- **Rehan Pratama** - [GitHub](https://github.com/Rehanpratama)  
+  `AI Specialist`
 
-### Contributors
-
-- **RehanPratama** - [GitHub](https://github.com/Rehanpratama)
-- **SkyDcode** - [GitHub](https://github.com/SkyyDcode)
+- **SkyDcode** - [GitHub](https://github.com/SkyyDcode)  
+  `Frontend Integration`
 
 ## ❓ FAQ
 
 ### Umum
-1. **Q: Apakah bot ini gratis?**
-   A: Ya, bot ini gratis dan open source.
+**Q: Apakah bot ini gratis?**  
+A: Ya, sepenuhnya open-source di bawah lisensi MIT
 
-2. **Q: Bagaimana cara report bug?**
-   A: Buat issue di GitHub repository.
+**Q: Bagaimana melaporkan bug?**  
+A: Buat issue di GitHub atau laporkan ke grup WhatsApp
 
-### Technical
-1. **Q: Mengapa perlu oblixn.cmd?**
-   A: Untuk standarisasi development workflow.
+### Teknis
+**Q: Cara backup session?**  
+A: Session otomatis tersimpan di folder `./sessions`
 
-2. **Q: Apakah support multi-device?**
-   A: Ya, menggunakan Baileys multi-device.
+**Q: Support multi-device?**  
+A: Ya, menggunakan sistem multi-device Baileys
 
-## 📋 Changelog
+## 📋 Pembaruan
 
-### v0.0.4 (Current)
-- Fix error pada YouTube downloader
-- Fix bug pada tools wiki
-- Penghapusan fitur AI (API dibanned)
-- Implementasi oblixn.cmd v2.5
+### v0.0.4
+- Perbaikan sistem download YouTube
+- Optimasi manajemen memori AI
+- Penambahan middleware keamanan
+- Peningkatan stabilitas session
 
-[Changelog lengkap](CHANGELOG.md)
+[Lihat changelog lengkap](CHANGELOG.md)
 
 ## 📄 Lisensi
 
-Project ini dilisensikan di bawah [MIT License](LICENSE)
+Dilisensikan di bawah [MIT License](LICENSE) - Bebas digunakan, dimodifikasi, dan didistribusikan
 
-## 🤝 Contributing
+## 🤝 Kontribusi
 
-Kami sangat menghargai kontribusi Anda! Silakan baca [CONTRIBUTING.md](CONTRIBUTING.md) untuk panduan detail.
-
-### Cara Berkontribusi
+Ikuti panduan di [CONTRIBUTING.md](CONTRIBUTING.md). Persyaratan utama:
 1. Fork repository
-2. Create feature branch
-3. Commit changes
+2. Buat branch fitur (`feat/nama-fiturnya`)
+3. Commit perubahan
 4. Push ke branch
-5. Submit pull request
+5. Buat Pull Request
 
 ## 📞 Kontak
 
-- Website: -
-- Email: -
-- Komunitas Whatsapp: [@Oblivinx](https://whatsapp.com/channel/0029VaqiYrGA89MnsJJFnt43)
-
+- Komunitas WhatsApp: [Oblivinx Group](https://chat.whatsapp.com/CHANNEL_ID)
+- Email Support: riobelly@gmail.com
+- Issue Tracker: [GitHub Issues](https://github.com/maousamaNatz/boring1/issues)

@@ -280,99 +280,69 @@ function formatPhoneNumber(number) {
 }
 
 // Fungsi untuk menambah atau update user
-async function registerUser(userId, username = null) {
-    const connection = await pool.getConnection();
-    
+async function registerUser(userId, username = 'Pengguna Baru') {
     try {
-        await connection.beginTransaction();
+        // Validasi format nomor HP
+        const normalizedUserId = userId.replace(/[^0-9]/g, '');
+        if (!normalizedUserId.match(/^628\d{8,11}$/)) {
+            throw new Error('Format nomor HP tidak valid');
+        }
 
-        // Normalisasi dan validasi format nomor telepon
-        let normalizedUserId = userId.replace(/[^0-9]/g, "");
+        // Generate username jika kosong
+        const cleanUsername = username.trim() || `user_${normalizedUserId.slice(3)}`;
         
-        // Validasi panjang nomor telepon Indonesia (10-13 digit setelah kode negara)
-        if (normalizedUserId.length > 15 || normalizedUserId.length < 10) {
-            return {
-                success: false,
-                message: 'Format nomor telepon tidak valid'
-            };
-        }
-
-        // Normalisasi format 62
-        if (normalizedUserId.startsWith("0")) {
-            normalizedUserId = "62" + normalizedUserId.slice(1);
-        } else if (!normalizedUserId.startsWith("62")) {
-            normalizedUserId = "62" + normalizedUserId;
-        }
-
-        // Validasi tambahan untuk memastikan ini nomor telepon
-        if (!/^62[8-9][0-9]{8,11}$/.test(normalizedUserId)) {
-            return {
-                success: false,
-                message: 'Bukan nomor telepon yang valid'
-            };
-        }
-
-        console.log('Processing user registration:', {
-            originalUserId: userId,
-            normalizedUserId: normalizedUserId,
-            username: username
-        });
-
-        // Cek apakah user sudah terdaftar
-        const [existingUser] = await connection.execute(
-            'SELECT * FROM users WHERE user_id = ?',
+        // Cek user existing dengan prepared statement
+        const [existing] = await pool.query(
+            'SELECT id FROM users WHERE user_id = ?',
             [normalizedUserId]
         );
 
-        if (existingUser.length === 0) {
-            // User belum terdaftar, tambahkan user baru
-            await connection.execute(
-                `INSERT INTO users (
-                    user_id, 
-                    username,
-                    is_premium,
-                    is_banned,
-                    is_blocked,
-                    coins,
-                    experience,
-                    level,
-                    total_messages,
-                    messages_per_day
-                ) VALUES (?, ?, 0, 0, 0, 0, 0, 1, 1, 1)`,
-                [normalizedUserId, username]
-            );
-        } else {
-            // Update data user yang sudah ada
-            await connection.execute(
-                `UPDATE users SET 
-                    username = COALESCE(?, username),
-                    total_messages = total_messages + 1,
-                    messages_per_day = messages_per_day + 1,
-                    updated_at = CURRENT_TIMESTAMP
-                WHERE user_id = ?`,
-                [username, normalizedUserId]
-            );
+        if (existing.length > 0) {
+            console.log(`User ${normalizedUserId} sudah terdaftar`);
+            return existing[0].id;
         }
 
-        await connection.commit();
-        return {
-            success: true,
-            message: existingUser.length === 0 ? 'User baru berhasil didaftarkan' : 'Data user berhasil diperbarui',
-            isNewUser: existingUser.length === 0,
-            userId: normalizedUserId
-        };
+        // Insert user baru dengan transaction
+        const connection = await pool.getConnection();
+        await connection.beginTransaction();
+
+        try {
+            const [result] = await connection.query(
+                `INSERT INTO users 
+                (user_id, username, created_at, updated_at) 
+                VALUES (?, ?, NOW(), NOW())`,
+                [normalizedUserId, cleanUsername]
+            );
+
+            await connection.commit();
+            console.log(`User ${normalizedUserId} terdaftar dengan ID: ${result.insertId}`);
+            return result.insertId;
+            
+        } catch (error) {
+            await connection.rollback();
+            throw error;
+        } finally {
+            connection.release();
+        }
 
     } catch (error) {
-        await connection.rollback();
-        console.error('Error in registerUser:', error);
-        return {
-            success: false,
-            message: 'Gagal mendaftarkan/memperbarui user: ' + error.message
-        };
-    } finally {
-        connection.release();
+        console.error('Error registrasi user:', {
+            userId,
+            error: error.message
+        });
+        throw error;
     }
 }
+
+// Tambahkan ping database secara berkala
+setInterval(async () => {
+  try {
+    const [rows] = await pool.query('SELECT 1');
+    console.log('Database ping success:', rows);
+  } catch (error) {
+    console.error('Database ping failed:', error);
+  }
+}, 300000); // Setiap 5 menit
 
 module.exports = {
     pool,

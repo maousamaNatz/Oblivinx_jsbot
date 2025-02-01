@@ -13,3 +13,7 @@ baileys_store_*
 store/
 node_modules/
 package-lock.json
+
+# Logs Winston
+*.log
+!utils/logger.js

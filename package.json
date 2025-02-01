@@ -12,7 +12,9 @@
     "monitor": "pm2 monit whatsapp-bot",
     "logs": "pm2 logs whatsapp-bot",
     "delete": "pm2 delete whatsapp-bot",
-    "update": "pm2 update whatsapp-bot"
+    "update": "pm2 update whatsapp-bot",
+    "migrate": "node database/migrate.js",
+    "migrate:fresh": "rm -rf auth_info_baileys && npm run migrate"
   },
   "keywords": [
     "whatsapp",
@@ -79,7 +81,7 @@
     }
   },
   "dependencies": {
-    "@whiskeysockets/baileys": "^6.7.9",
+    "@whiskeysockets/baileys": "^6.5.0",
     "@yemreak/yt-dlp": "^1.1.5",
     "acrcloud": "^1.4.0",
     "axios": "^1.7.9",
@@ -88,17 +90,19 @@
     "dotenv": "^16.4.7",
     "filesize": "^10.1.6",
     "form-data": "^4.0.1",
+    "fs-extra": "^11.3.0",
     "google-it": "^1.6.4",
     "google-libphonenumber": "^3.2.40",
     "https-proxy-agent": "^7.0.6",
     "jsdom": "^25.0.1",
     "link-preview-js": "^3.0.12",
     "moment-timezone": "^0.5.46",
-    "mysql2": "^3.11.5",
+    "mysql2": "^3.12.0",
     "node-fetch": "^2.7.0",
     "opencage-api-client": "^1.0.7",
     "pino": "^9.5.0",
     "pino-pretty": "^13.0.0",
+    "punycode": "npm:punycode.js@2.3.1",
     "qrcode-terminal": "^0.12.0",
     "qs": "^6.13.1",
     "random-useragent": "^0.5.0",
@@ -106,10 +110,15 @@
     "systeminformation": "^5.23.21",
     "uuid": "^11.0.3",
     "wikipedia": "^2.1.2",
+    "winston": "^3.17.0",
     "youtube-dl-exec": "^3.0.10"
   },
   "devDependencies": {
     "chai": "^5.1.2",
     "mocha": "^11.1.0"
+  },
+  "overrides": {
+    "punycode": "npm:punycode.js@2.3.1",
+    "**/punycode": "npm:punycode.js@2.3.1"
   }
 }

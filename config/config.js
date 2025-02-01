@@ -1,5 +1,5 @@
 const { makeInMemoryStore } = require("@whiskeysockets/baileys");
-const { botLogger } = require("../src/utils/logger");
+const logger = require('../src/utils/logger');
 const path = require("path");
 const fs = require("fs");
 const os = require("os");
@@ -239,17 +239,13 @@ const config = {
   }
 });
 
-// Log konfigurasi yang dimuat dengan pengecekan
-botLogger.info(`Loaded bot configuration:`);
-botLogger.info(`├─ Bot Name: ${config.botName}`);
-botLogger.info(
-  `├─ Owner: ${
-    Array.isArray(config.owner) ? config.owner.join(", ") : "Not configured"
-  }`
-);
-botLogger.info(`├─ Prefix: ${config.prefix}`);
-botLogger.info(`├─ Prosessor: ${config.prosessor}`);
-botLogger.info(`└─ Session: ${config.sessionName}`);
+// Perbaikan logging
+logger.info(`Loaded bot configuration:`, {
+  botName: config.botName,
+  owner: config.owner,
+  prefix: config.prefix,
+  sessionName: config.sessionName
+});
 
 // Tambahkan fungsi cleanup di bot.js
 function cleanupSessions() {
@@ -264,11 +260,11 @@ function cleanupSessions() {
 
       if (now - stats.mtimeMs > config.sessionMaxAge) {
         fs.unlinkSync(filePath);
-        botLogger.info(`Cleaned up old session file: ${file}`);
+        logger.info(`Cleaned up old session file: ${file}`);
       }
     });
   } catch (error) {
-    botLogger.error("Error cleaning up sessions:", error);
+    logger.error("Error cleaning up sessions:", error);
   }
 }
 

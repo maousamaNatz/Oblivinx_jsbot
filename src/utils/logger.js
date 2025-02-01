@@ -1,77 +1,77 @@
-const pino = require('pino');
-const moment = require('moment-timezone');
+const winston = require('winston');
+const { combine, timestamp, printf } = winston.format;
 
-// Konfigurasi timezone
-const timezone = 'Asia/Jakarta';
-
-// Format timestamp
-const timeFormat = 'DD/MM/YYYY, HH:mm:ss';
-
-// Konfigurasi logger untuk bot
-const botLogger = {
-    info: (msg) => {
-        console.log(`[${moment().tz(timezone).format(timeFormat)}] [INFO] ${msg}`);
-    },
-    success: (msg) => {
-        console.log(`[${moment().tz(timezone).format(timeFormat)}] [SUCCESS] ${msg}`);
-    },
-    warning: (msg) => {
-        console.log(`[${moment().tz(timezone).format(timeFormat)}] [WARNING] ${msg}`);
-    },
-    error: (msg) => {
-        console.error(`[${moment().tz(timezone).format(timeFormat)}] [ERROR] ${msg}`);
-    }
+// Tambahkan custom level untuk success
+const customLevels = {
+  levels: {
+    error: 0,
+    warn: 1,
+    info: 2,
+    success: 3,
+    debug: 4,
+    trace: 5
+  },
+  colors: {
+    error: 'red',
+    warn: 'yellow',
+    info: 'green',
+    success: 'cyan',
+    debug: 'blue',
+    trace: 'white'
+  }
 };
 
-// Buat instance Pino logger untuk Baileys dengan pino-pretty
-const baileysLogger = pino({
-    level: 'info',
-    transport: {
-        target: 'pino-pretty',
-        options: {
-            translateTime: 'SYS:dd/mm/yyyy HH:MM:ss',
-            ignore: 'pid,hostname',
-            colorize: true,
-            levelFirst: true,
-            singleLine: true
-        }
-    }
+const customFormat = printf(({ level, message, timestamp }) => {
+  return `[${timestamp}] [${level.toUpperCase()}] ${message}`;
 });
 
-// Konfigurasi logger untuk development
-const devLogger = pino({
-    level: 'debug',
-    transport: {
-        target: 'pino-pretty',
-        options: {
-            translateTime: 'SYS:dd/mm/yyyy HH:MM:ss',
-            ignore: 'pid,hostname',
-            colorize: true,
-            levelFirst: true
-        }
-    }
+const logger = winston.createLogger({
+  levels: customLevels.levels,
+  level: process.env.LOG_LEVEL || 'debug',
+  format: combine(
+    timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+    customFormat
+  ),
+  transports: [
+    new winston.transports.Console({
+      format: combine(
+        winston.format.colorize(),
+        customFormat
+      )
+    }),
+    new winston.transports.File({ filename: './logs/combined.log' }),
+    new winston.transports.File({ filename: './logs/error.log', level: 'error' })
+  ]
 });
 
-// Fungsi helper untuk format waktu
-const getTimestamp = () => moment().tz(timezone).format(timeFormat);
-
-// Buat dummy logger untuk Baileys jika pino tidak berfungsi
-const dummyLogger = {
-    child: () => dummyLogger,
-    info: () => {},
-    error: () => {},
-    warn: () => {},
-    debug: () => {},
-    trace: () => {}
+// Perbaiki method child
+logger.child = function(options) {
+  return this.defaultMeta 
+    ? winston.createLogger({
+        ...this.config,
+        defaultMeta: { ...this.defaultMeta, ...options },
+        transports: this.transports
+      })
+    : this;
 };
 
-module.exports = {
-    botLogger,
-    baileysLogger,
-    devLogger,
-    log: botLogger.info,
-    success: botLogger.success,
-    warning: botLogger.warning,
-    error: botLogger.error,
-    getTimestamp
-}; 
+// Tambahkan properti defaultMeta jika belum ada
+logger.defaultMeta = logger.defaultMeta || {};
+
+// Tambahkan method success
+logger.success = function(message) {
+  this.log('success', message);
+};
+
+// Tambahkan transport khusus untuk baileys
+logger.add(new winston.transports.Console({
+  level: 'debug',
+  format: winston.format.combine(
+    winston.format.colorize(),
+    winston.format.simple()
+  )
+}));
+
+winston.addColors(customLevels.colors);
+
+module.exports = logger;

@@ -1,5 +1,79 @@
 {
-  "welcome": "Selamat datang di ChatBot WhatsApp!",
-  "ai_prompt": "Silakan ketik !ai diikuti dengan pertanyaan Anda",
-  "error": "Maaf, terjadi kesalahan. Silakan coba lagi nanti."
+  "errors": {
+    "generic": "⚠️ GANGGUAN SISTEM SEMENTARA\nMohon bersabar, para robot kecil kami sedang bekerja keras!\n⏳ Coba lagi dalam 3 menit atau hubungi teknisi:\nwa.me/${OWNER_NUMBER_ONE}",
+    "server_error": "🔥 ERROR 500: GANGGUAN SERVER\nTim teknisi telah diberi tahu\nSilakan coba lagi dalam 5-10 menit",
+    "maintenance": "🔧 SISTEM SEDANG DIPERBAIKI\nPerbaikan diperkirakan selesai dalam:\n🕒 1 Jam 30 Menit\nFollow Twitter @AIExplorer untuk update",
+    "rate_limit": "⏰ BATAS PENGGUNAAN\nAnda telah mencapai limit harian\nPremium member mendapatkan akses tak terbatas!",
+    "call": {
+      "blocked": "❌ *Anda telah diblokir dan dibanned karena melakukan panggilan berulang kali ke bot*",
+      "warning": "⚠️ *Peringatan!*\n\nJangan melakukan panggilan ke bot!\nPanggilan akan otomatis ditolak.\n\nPeringatan: ${callCount}/${MAX_CALL_ATTEMPTS}\n\nJika Anda melakukan panggilan sebanyak ${MAX_CALL_ATTEMPTS} kali, Anda akan diblokir dan dibanned secara otomatis.",
+      "rejected": "📞 Panggilan dari ${callerJid} telah ditolak otomatis",
+      "error": "⚠️ *Sistem sedang mengalami gangguan, tetapi panggilan tetap tidak diizinkan*"
+    },
+    "rpg": {
+      "no_character": "❌ Kamu belum memiliki karakter!\nGunakan !createchar untuk membuat karakter.",
+      "in_battle": "❌ Kamu sedang dalam pertarungan!",
+      "invalid_class": "❌ Kelas tidak valid! Pilih: warrior/mage/assassin/archer",
+      "skill_fail": "❌ Skill tidak tersedia!",
+      "inventory_full": "❌ Inventory penuh!"
+    }
+  },
+
+  "commands": {
+    "help_menu": "🆘 MENU BANTUAN:\n• !menu - Tampilkan semua fitur\n• !info - Status akun & penggunaan\n• !reset - Mulai percakapan baru\n• !bahasa - Ganti bahasa",
+    "ai_commands": "🧠 COMMAND AI:\n• !ai [pertanyaan] - Konsultasi AI\n• !img [prompt] - Generate gambar\n• !tts [teks] - Konversi ke suara\n• !translate [teks] - Terjemahkan",
+    "utility_commands": "🔧 COMMAND UTAMA:\n• !summarize - Ringkas dokumen\n• !reminder - Atur pengingat\n• !calc - Kalkulator ilmiah\n• !news - Berita terkini",
+    "invalid_command": "❌ PERINTAH TIDAK DIKENALI\nGunakan !help untuk melihat panduan\natau ketik !menu untuk panduan lengkap",
+    "rpg": {
+      "createchar": "⚔️ Buat karakter RPG baru\nFormat: !createchar <nama> <class>\nKelas tersedia: Warrior, Mage, Assassin, Archer",
+      "profile": "📊 Lihat status karakter RPG-mu",
+      "battle": "⚔️ Mulai pertarungan dengan monster",
+      "inventory": "🎒 Tampilkan inventory karakter",
+      "skill": "✨ Gunakan skill dalam pertarungan"
+    }
+  },
+
+  "guides": {
+    "welcome": "🤖✨ Selamat datang di Dunia AI Explorer! Temukan kekuatan kecerdasan buatan dalam genggamanmu. Saya siap membantumu menjelajahi teknologi masa depan!",
+    "tutorial": "📚 PANDUAN PENGGUNAAN:\n1. Awali dengan !ai\n2. Tulis pertanyaan spesifik\n3. Gunakan bahasa jelas\n4. Tambah konteks jika perlu\nContoh: '!ai Buatkan proposal bisnis cafe kekinian di Bali'",
+    "ai_prompt": "💡 TANYA APA SAJA!\nFormat: !ai [pertanyaanmu]\nContoh:\n- !ai Strategi marketing digital 2024\n- !ai Puisi tentang teknologi\n- !ai Analisis saham TERBARU",
+    "rpg": {
+      "character_created": "✅ Karakter berhasil dibuat!\n\n*Detail Karakter:*\n📝 Nama: ${name}\n⚔️ Kelas: ${className}\n❤️ HP: ${hp}\n💫 MP: ${mp}\n⚡ Stamina: ${stamina}",
+      "battle_start": "⚔️ *BATTLE START!*\n🆚 Melawan: ${enemyName} (Lv.${level})\n❤️ HP: ${hp}/${maxHp}\n⚔️ Attack: ${attack}\n🛡️ Defense: ${defense}",
+      "victory": "🎉 *VICTORY!*\nMendapatkan:\n✨ ${exp} EXP\n💰 ${gold} Gold",
+      "defeat": "💀 *DEFEATED!*\nKamu kalah dalam pertarungan..."
+    }
+  },
+
+  "info": {
+    "privacy": "🔒 KEAMANAN DATA:\n1. Enkripsi end-to-end\n2. Riwayat chat otomatis terhapus\n3. Perlindungan GDPR compliant",
+    "news": "📢 PEMBARUAN v2.4:\n- Tambah 7 bahasa baru\n- Optimasi NLP 50%\n- Fitur analisis data real-time\n- Deteksi konten sensitif",
+    "data": "🗑️ DATA TERHAPUS!\nPercakapan Anda aman dan terenkripsi\nGunakan !new untuk mulai fresh",
+    "connection": {
+      "connected": "✅ Terhubung ke WhatsApp!",
+      "reconnecting": "♻️ Mencoba menghubungkan kembali...",
+      "disconnected": "❌ Koneksi terputus: ${reason}"
+    },
+    "rpg": {
+      "profile": "📊 *STATUS KARAKTER*\n📝 Nama: ${name}\n⚔️ Kelas: ${className}\n📈 Level: ${level}\n💰 Gold: ${gold}\n❤️ HP: ${hp}/${maxHp}\n💫 MP: ${mp}/${maxMp}\n⚡ Stamina: ${stamina}/${maxStamina}",
+      "inventory": "🎒 *INVENTORY*\nKapasitas: ${weight}/${maxWeight}\n\n*Items:*\n${items}\n*Equipment:*\n🗡️ Weapon: ${weapon}\n🛡️ Armor: ${armor}\n💍 Accessory: ${accessory}"
+    }
+  },
+
+  "support": {
+    "contact": "👨💻 DUKUNGAN TEKNIS:\n• Rio Belly: wa.me/${OWNER_NUMBER_ONE}\n• Bagas Saputra: wa.me/${OWNER_NUMBER_TWO}",
+    "report": "📩 LAPORKAN MASALAH:\nGunakan format: !lapor [deskripsi]\nContoh: !lapor Fitur translate error\nRespon maksimal 1x24 jam"
+  },
+
+  "block": {
+    "banned": "🔒 Anda telah dibanned!\nAlasan: ${reason}\nTanggal: ${date}\nHubungi owner untuk unbanned",
+    "blocked": "🚫 Anda telah diblokir!\nAlasan: ${reason}\nOleh: ${blockedBy}",
+    "error": "❌ Gagal memblokir pengguna"
+  },
+
+  "unblock": {
+    "success": "🔓 Berhasil membuka blokir ${userId}",
+    "error": "❌ Gagal membuka blokir pengguna",
+    "not_found": "ℹ️ Pengguna tidak ditemukan dalam daftar blokir"
+  }
 }
