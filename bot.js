@@ -7,7 +7,7 @@ const fs = require("fs");
 const path = require("path");
 require("dotenv").config();
 const permissionHandler = require("./src/handler/permission");
-const { botLogger, baileysLogger } = require("./src/utils/logger");
+const { botLogger, baileysLogger } = require("./sr\c/utils/logger");
 const {
   config,
   store,
@@ -650,7 +650,12 @@ function setupGlobalErrorHandlers() {
 
 // Contoh penggunaan di tempat lain
 process.on("uncaughtException", (err) => {
-  botLogger.error("Uncaught Exception: " + err);
+  if(botLogger) {
+    botLogger.error("Uncaught Exception: " + err);
+  } else {
+    console.error("Fallback error logging:", err); // Fallback jika logger gagal
+  }
+  process.exit(1);
 });
 
 process.on("unhandledRejection", (reason, promise) => {

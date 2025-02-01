@@ -4,6 +4,8 @@ const path = require("path");
 const { botLogger } = require("../utils/logger");
 const fileManager = require("../../config/memoryAsync/readfile");
 const InstagramDownloader = require("../lib/instadl");
+const axios = require('axios');
+const { skbuffer, fromBuffer } = require('skbuffer');
 
 // Command untuk download video YouTube
 global.Oblixn.cmd({
@@ -260,24 +262,30 @@ global.Oblixn.cmd({
 
       await msg.reply("⏳ Sedang memproses, mohon tunggu...");
 
-      const res = await fetch(
-        `https://api-xcoders.site/api/download/mediafire?url=${url}&apikey=${global.xcode}`
+      // Menggunakan API endpoint baru
+      const { data } = await axios.get(
+        `https://raganork-network.vercel.app/api/mediafire?url=${url}`
       );
-      const data = await res.json();
+      const { link, title, size } = data;
+      
+      await msg.reply(`_*Mengunduh file.. [${size.trim()}]*_`);
 
-      if (!data.success) {
-        return msg.reply("❌ Gagal mengunduh file. Silakan coba lagi.");
-      }
+      // Download file sebagai buffer
+      const document = await skbuffer(link);
+      const { mime } = await fromBuffer(document);
 
-      const fileData = data.result;
+      // Kirim sebagai dokumen
+      await Oblixn.sock.sendMessage(
+        msg.chat,
+        {
+          document: document,
+          fileName: title,
+          mimetype: mime,
+        },
+        { quoted: msg }
+      );
 
-      await Oblixn.sock.sendMessage(msg.chat, {
-        document: { url: fileData.url },
-        mimetype: fileData.mime,
-        fileName: fileData.title,
-      });
-
-      botLogger.info(`Berhasil mendownload file Mediafire: ${fileData.title}`);
+      botLogger.info(`Berhasil mendownload file Mediafire: ${title}`);
     } catch (error) {
       botLogger.error("Error dalam mediafire downloader:", error);
       return msg.reply(

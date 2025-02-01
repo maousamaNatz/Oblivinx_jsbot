@@ -7,51 +7,54 @@ global.Oblixn.cmd({
   alias: ["stalk", "igstalk"],
   desc: "Menampilkan informasi profil Instagram",
   category: "stalker",
-  async exec(msg, args) {
+  async exec(msg, { args, text }) {
     try {
-      console.log("Received args:", args);
-      
-      const username = args.args?.[0] || args.match?.[1];
+      const username = args[0] || text?.match(/(?:https?:\/\/)?(?:www\.)?instagram\.com\/([a-zA-Z0-9_.]+)/i)?.[1];
       
       if (!username) {
-        return msg.reply("❌ Username Instagram diperlukan!\n\nContoh: !igstalk username");
+        return msg.reply("❌ Masukkan username Instagram yang valid!\nContoh: !igstalk username");
       }
 
-      console.log("Username to stalk:", username);
-      
-      await msg.reply("⏳ Sedang mengambil informasi profil...");
+      await msg.reply("⏳ Mengambil info profil...");
 
       const stats = await igstalk(username);
       
-      if (!stats || !stats.username) {
-        return msg.reply("❌ User tidak ditemukan atau terjadi kesalahan!");
+      if (!stats?.username) {
+        return msg.reply("❌ Profil tidak ditemukan atau akun private");
       }
 
+      // Format angka dengan titik untuk ribuan
+      const formatNumber = (num) => num?.replace?.(/(\d)(?=(\d{3})+$)/g, '$1.') || '-';
+      
       const caption = `
-📸 *INSTAGRAM STALK*
+📸 *INSTAGRAM STALKER*
 
-*Nama:* ${stats.fullName}
+*Nama Lengkap:* ${stats.fullName || '-'}
 *Username:* @${stats.username}
 
 📊 *STATISTIK*
-• *Followers:* ${stats.followers || stats.followersM}
-• *Following:* ${stats.following || stats.followingM}
-• *Posts:* ${stats.postsCount || stats.postsCountM}
+• *Followers:* ${formatNumber(stats.followers)}
+• *Following:* ${formatNumber(stats.following)}
+• *Postingan:* ${formatNumber(stats.postsCount)}
 
 📝 *BIO:* 
-${stats.bio || '-'}
+${stats.bio?.trim() || 'Tidak ada bio'}
+
+🔗 *Profil:* instagram.com/${stats.username}
 `.trim();
 
-      if (stats.profilePicHD) {
-        await msg.sendImage(stats.profilePicHD, caption);
+      if (stats.profilePicHD?.startsWith('http')) {
+        await Oblixn.sock.sendMessage(msg.chat, { 
+          image: { url: stats.profilePicHD },
+          caption: caption 
+        }, { quoted: msg });
       } else {
         await msg.reply(caption);
       }
 
     } catch (error) {
-      botLogger.error("Error dalam command igstalk:", error);
-      console.error("Detailed error:", error);
-      await msg.reply("❌ Terjadi kesalahan saat melakukan stalking: " + error.message);
+      botLogger.error("Error igstalk:", error);
+      await msg.reply(`❌ Gagal memproses: ${error.message || 'Coba gunakan username yang valid'}`);
     }
   }
 });
@@ -60,26 +63,28 @@ async function igstalk(username) {
   try {
     const { data } = await axios.get(`https://dumpor.com/v/${username}`, {
       headers: {
-        "user-agent": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,/;q=0.8,application/signed-exchange;v=b3;q=0.9",
-        "cookie": "_inst_key=SFMyNTY.g3QAAAABbQAAAAtfY3NyZl90b2tlbm0AAAAYT3dzSXI2YWR6SG1fNFdmTllfZnFIZ1Ra.5Og9VRy7gUy9IsCwUeYW8O8qvHbndaus-cqBRaZ7jcg"
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+        "cookie": "csrftoken=abcd1234; ig_did=ABCD-1234; mid=XYZ123"
       }
     });
+    
     const $ = cheerio.load(data);
-    const results = {
-      username: ($('#user-page > div.user > div.row > div > div.user__title > h4').text() || '').replace(/@/gi, '').trim(),
-      fullName: $('#user-page > div.user > div.row > div > div.user__title > a > h1').text(),
-      profilePicHD: ($('#user-page > div.user > div.row > div > div.user__img').attr('style') || '').replace(/(background-image: url\(\'|\'\);)/gi, '').trim(),
-      bio: $('#user-page > div.user > div.row > div > div.user__info-desc').text(),
-      followers: ($('#user-page > div.user > div.row > div > ul > li').eq(1).text() || '').replace(/Followers/gi, '').trim(),
-      followersM: ($('#user-page > div.container > div > div > div:nth-child(1) > div > a').eq(2).text() || '').replace(/Followers/gi, '').trim(),
-      following: ($('#user-page > div.user > div > div.col-md-4.col-8.my-3 > ul > li').eq(2).text() || '').replace(/Following/gi, '').trim(),
-      followingM: ($('#user-page > div.container > div > div > div:nth-child(1) > div > a').eq(3).text() || '').replace(/Following/gi, '').trim(),
-      postsCount: ($('#user-page > div.user > div > div.col-md-4.col-8.my-3 > ul > li').eq(0).text() || '').replace(/Posts/gi, '').trim(),
-      postsCountM: ($('#user-page > div.container > div > div > div:nth-child(1) > div > a').eq(0).text() || '').replace(/Posts/gi, '').trim()
+    
+    // Improved selector based on current dumpor.com layout
+    return {
+      username: $('#user-page .user__title h4').text().replace('@', '').trim(),
+      fullName: $('#user-page .user__title h1').text().trim(),
+      profilePicHD: $('#user-page .user__img').css('background-image').match(/url\(["']?(.*?)["']?\)/)?.[1],
+      bio: $('#user-page .user__info-desc').text().trim(),
+      followers: $('#user-page li:contains("Followers")').text().replace('Followers', '').trim(),
+      following: $('#user-page li:contains("Following")').text().replace('Following', '').trim(),
+      postsCount: $('#user-page li:contains("Posts")').text().replace('Posts', '').trim()
     };
-    return results;
   } catch (error) {
-    botLogger.error("Error fetching Instagram data:", error);
-    throw new Error("Gagal mengambil data Instagram");
+    if (error.response?.status === 404) {
+      throw new Error('Profil tidak ditemukan');
+    }
+    botLogger.error("IG Stalk Error:", error);
+    throw new Error('Gagal mengambil data, coba beberapa saat lagi');
   }
-} 
+}

@@ -1,5 +1,5 @@
 const { makeInMemoryStore } = require("@whiskeysockets/baileys");
-const logger = require('../src/utils/logger');
+const { botLogger } = require('../src/utils/logger');
 const path = require("path");
 const fs = require("fs");
 const os = require("os");
@@ -121,7 +121,7 @@ const memoryMonitor = {
 }
 
 // Konfigurasi bot
-const config = {
+let config = {
   gameData: {
     tebakGambar: loadGameData("tebakGambar.json"),
     tebakKata: loadGameData("tebakKata.json"),
@@ -229,6 +229,12 @@ const config = {
     deleteMessage: true,
     warnUser: true,
     logDetections: true
+  },
+  logging: {
+    level: 'debug',
+    dir: 'logs',
+    errorLog: 'error.log',
+    combinedLog: 'combined.log'
   }
 };
 
@@ -240,7 +246,7 @@ const config = {
 });
 
 // Perbaikan logging
-logger.info(`Loaded bot configuration:`, {
+botLogger.info(`Loaded bot configuration:`, {
   botName: config.botName,
   owner: config.owner,
   prefix: config.prefix,
@@ -260,11 +266,11 @@ function cleanupSessions() {
 
       if (now - stats.mtimeMs > config.sessionMaxAge) {
         fs.unlinkSync(filePath);
-        logger.info(`Cleaned up old session file: ${file}`);
+        botLogger.info(`Cleaned up old session file: ${file}`);
       }
     });
   } catch (error) {
-    logger.error("Error cleaning up sessions:", error);
+    botLogger.error("Error cleaning up sessions:", error);
   }
 }
 

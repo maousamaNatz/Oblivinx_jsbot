@@ -1,7 +1,7 @@
 const winston = require('winston');
 const { combine, timestamp, printf } = winston.format;
 
-// Tambahkan custom level untuk success
+// Custom levels dan colors untuk logger
 const customLevels = {
   levels: {
     error: 0,
@@ -21,57 +21,81 @@ const customLevels = {
   }
 };
 
-const customFormat = printf(({ level, message, timestamp }) => {
-  return `[${timestamp}] [${level.toUpperCase()}] ${message}`;
+const logFormat = printf(({ level, message, timestamp }) => {
+  return `${timestamp} [${level.toUpperCase()}]: ${message}`;
 });
 
-const logger = winston.createLogger({
+// Logger untuk bot
+const botLogger = winston.createLogger({
   levels: customLevels.levels,
   level: process.env.LOG_LEVEL || 'debug',
   format: combine(
     timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-    customFormat
+    logFormat
   ),
   transports: [
     new winston.transports.Console({
       format: combine(
         winston.format.colorize(),
-        customFormat
+        logFormat
       )
     }),
-    new winston.transports.File({ filename: './logs/combined.log' }),
-    new winston.transports.File({ filename: './logs/error.log', level: 'error' })
+    new winston.transports.File({ filename: 'logs/bot-debug.log' }),
+    new winston.transports.File({ 
+      filename: 'logs/combined.log',
+      level: 'info'
+    }),
+    new winston.transports.File({
+      filename: 'logs/error.log',
+      level: 'error'
+    })
   ]
 });
 
-// Perbaiki method child
-logger.child = function(options) {
-  return this.defaultMeta 
-    ? winston.createLogger({
-        ...this.config,
-        defaultMeta: { ...this.defaultMeta, ...options },
-        transports: this.transports
-      })
-    : this;
-};
+// Logger khusus untuk Baileys
+const baileysLogger = winston.createLogger({
+  levels: customLevels.levels,
+  level: 'fatal',
+  format: combine(
+    timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+    logFormat
+  ),
+  transports: [
+    new winston.transports.Console({
+      format: combine(
+        winston.format.colorize(),
+        logFormat
+      )
+    }),
+    new winston.transports.File({ 
+      filename: 'logs/baileys-debug.log',
+      level: 'fatal'
+    }),
+    new winston.transports.File({
+      filename: 'logs/error.log',
+      level: 'error'
+    })
+  ]
+});
 
-// Tambahkan properti defaultMeta jika belum ada
-logger.defaultMeta = logger.defaultMeta || {};
-
-// Tambahkan method success
-logger.success = function(message) {
+// Method tambahan untuk bot logger
+botLogger.success = function(message) {
   this.log('success', message);
 };
 
-// Tambahkan transport khusus untuk baileys
-logger.add(new winston.transports.Console({
-  level: 'debug',
-  format: winston.format.combine(
-    winston.format.colorize(),
-    winston.format.simple()
-  )
-}));
+botLogger.child = function(options) {
+  return winston.createLogger({
+    ...this.config,
+    defaultMeta: { ...this.defaultMeta, ...options },
+    transports: this.transports
+  });
+};
+
+botLogger.defaultMeta = {};
 
 winston.addColors(customLevels.colors);
 
-module.exports = logger;
+module.exports = { 
+  botLogger,
+  baileysLogger 
+};
