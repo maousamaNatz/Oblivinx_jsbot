@@ -16,7 +16,11 @@
       "invalid_class": "❌ Kelas tidak valid! Pilih: warrior/mage/assassin/archer",
       "skill_fail": "❌ Skill tidak tersedia!",
       "inventory_full": "❌ Inventory penuh!"
-    }
+    },
+    "invalid_usage": "❌ Format salah! Gunakan: {usage}",
+    "admin_only": "⚠️ Perintah ini hanya untuk admin grup!",
+    "bot_admin_required": "Bot harus menjadi admin untuk menggunakan fitur ini!",
+    "group_only": "Perintah ini hanya dapat digunakan di dalam grup!"
   },
 
   "commands": {
@@ -30,6 +34,39 @@
       "battle": "⚔️ Mulai pertarungan dengan monster",
       "inventory": "🎒 Tampilkan inventory karakter",
       "skill": "✨ Gunakan skill dalam pertarungan"
+    },
+    "group": {
+      "menu": "📝 *Hallo {username} berikut adalah perintah yang tersedia untuk command grup*\n▢ {prefix}group open - Membuka grup\n▢ {prefix}group close - Menutup grup\n▢ {prefix}group link - Mendapatkan link invite\n▢ {prefix}group revoke - Mereset link invite\n▢ {prefix}group name <text> - Mengubah nama grup\n▢ {prefix}group desc <text> - Mengubah deskripsi grup\n▢ {prefix}group promote @user - Menjadikan member sebagai admin\n▢ {prefix}group demote @user - Menurunkan admin menjadi member\n▢ {prefix}group leave - Mengeluarkan bot dari grup\n▢ {prefix}group info - Menampilkan informasi grup\n▢ {prefix}hidetag <text> - Mention semua member dengan pesan\n▢ {prefix}tagall <text> - Mention semua member dengan pesan\n▢ {prefix}tagadmin - Mention semua admin dengan pesan\n▢ {prefix}kick @user - Mengeluarkan anggota dari grup\n▢ {prefix}add <number> - Menambahkan anggota ke grup\n▢ {prefix}mute on - Mengaktifkan mode senyap\n▢ {prefix}mute off - Menonaktifkan mode senyap\n▢ {prefix}chatmode admin - Hanya admin yang bisa chat\n▢ {prefix}chatmode all - Semua member bisa chat\n▢ {prefix}setppgc - Mengubah foto profil grup",
+      "success_open": "✅ Grup telah dibuka!",
+      "success_close": "✅ Grup telah ditutup!",
+      "link": "🔗 Link grup: {link}",
+      "reset_link": "✅ Link grup telah direset!",
+      "name_updated": "✅ Nama grup telah diubah menjadi: {name}",
+      "desc_updated": "✅ Deskripsi grup telah diperbarui!",
+      "promote_success": "✅ Berhasil menjadikan member sebagai admin!",
+      "demote_success": "✅ Berhasil menurunkan admin menjadi member!",
+      "leave": "👋 Selamat tinggal! Bot akan keluar dari grup.",
+      "info": "*INFO GRUP*\n\n📛 *Nama:* {name}\n👥 *Member:* {members}\n👑 *Admin:* {admins}\n🆔 *ID:* {id}\n📅 *Dibuat:* {created}\n💬 *Deskripsi:*\n{desc}"
+    },
+    "stalk": {
+      "invalid_username": "❌ Masukkan username Instagram yang valid!\nContoh: !igstalk username",
+      "profile_not_found": "❌ Profil tidak ditemukan atau akun private",
+      "result": "📸 *INSTAGRAM STALKER*\n\n*Nama Lengkap:* {fullName}\n*Username:* @{username}\n\n📊 *STATISTIK*\n• *Followers:* {followers}\n• *Following:* {following}\n• *Postingan:* {posts}\n\n📝 *BIO:*\n{bio}\n\n🔗 *Profil:* instagram.com/{username}"
+    },
+    "hack": {
+      "invalid_ip": "❌ Format IP tidak valid\n\nContoh: {prefix}ipgeo 8.8.8.8",
+      "invalid_phone": "❌ Format nomor HP tidak valid\n\nContoh: .hpgeo 628123456789"
+    },
+    "downloader": {
+      "invalid_url": "❗ Silakan masukkan URL YouTube\nContoh: {example}",
+      "processing": "⏳ Sedang memproses video...",
+      "downloading": "📥 Mengunduh video...",
+      "sending": "✅ Video berhasil didownload, mengirim...",
+      "duration_limit": "❌ Maaf, video terlalu panjang. Maksimal {max} menit!"
+    },
+    "games": {
+      "active_game": "⚠️ Masih ada game {game} yang sedang berlangsung.\nSilahkan selesaikan atau tunggu timeout.",
+      "trivia_question": "📝 TRIVIA: {category}\n\n{question}\n\n{options}"
     }
   },
 
@@ -75,5 +112,9 @@
     "success": "🔓 Berhasil membuka blokir ${userId}",
     "error": "❌ Gagal membuka blokir pengguna",
     "not_found": "ℹ️ Pengguna tidak ditemukan dalam daftar blokir"
+  },
+
+  "success": {
+    "group_updated": "✅ Berhasil mengubah pengaturan {setting} menjadi {value}"
   }
 }

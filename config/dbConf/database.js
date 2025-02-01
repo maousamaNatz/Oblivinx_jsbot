@@ -280,57 +280,27 @@ function formatPhoneNumber(number) {
 }
 
 // Fungsi untuk menambah atau update user
-async function registerUser(userId, username = 'Pengguna Baru') {
+async function registerUser(userId, username = null) {
     try {
-        // Validasi format nomor HP
-        const normalizedUserId = userId.replace(/[^0-9]/g, '');
-        if (!normalizedUserId.match(/^628\d{8,11}$/)) {
-            throw new Error('Format nomor HP tidak valid');
-        }
-
-        // Generate username jika kosong
-        const cleanUsername = username.trim() || `user_${normalizedUserId.slice(3)}`;
-        
-        // Cek user existing dengan prepared statement
-        const [existing] = await pool.query(
-            'SELECT id FROM users WHERE user_id = ?',
-            [normalizedUserId]
+        const [result] = await pool.query(
+            `INSERT INTO users (
+                user_id, 
+                username,
+                is_banned,
+                is_blocked,
+                warnings,
+                created_at,
+                updated_at
+            ) VALUES (?, ?, 0, 0, 0, NOW(), NOW()) 
+            ON DUPLICATE KEY UPDATE 
+                username = COALESCE(VALUES(username), username),
+                updated_at = NOW()`,
+            [userId, username]
         );
-
-        if (existing.length > 0) {
-            console.log(`User ${normalizedUserId} sudah terdaftar`);
-            return existing[0].id;
-        }
-
-        // Insert user baru dengan transaction
-        const connection = await pool.getConnection();
-        await connection.beginTransaction();
-
-        try {
-            const [result] = await connection.query(
-                `INSERT INTO users 
-                (user_id, username, created_at, updated_at) 
-                VALUES (?, ?, NOW(), NOW())`,
-                [normalizedUserId, cleanUsername]
-            );
-
-            await connection.commit();
-            console.log(`User ${normalizedUserId} terdaftar dengan ID: ${result.insertId}`);
-            return result.insertId;
-            
-        } catch (error) {
-            await connection.rollback();
-            throw error;
-        } finally {
-            connection.release();
-        }
-
+        return result;
     } catch (error) {
-        console.error('Error registrasi user:', {
-            userId,
-            error: error.message
-        });
-        throw error;
+        console.error('Error detail:', error);
+        throw new Error('Gagal meregistrasi user: ' + error.message);
     }
 }
 

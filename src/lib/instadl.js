@@ -1,170 +1,198 @@
 const axios = require("axios");
 const cheerio = require("cheerio");
+const { color, log } = require('../utils/logger');
 
 class InstagramDownloader {
   constructor() {
     this.headers = {
-      "User-Agent":
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+      "cookie": process.env.IG_COOKIE || "sessionid=668Q96838382%3AVyZSFuT0tzrMwv%3A16%3AAYd5KFWjTKjomxrySjP6kJJmgE1pR_eFJNSK9nmwzg;"
     };
   }
 
-  // Fungsi utilitas untuk memeriksa tipe konten
-  async #fastCheck(url) {
+  // Validasi URL Instagram dengan pola yang diperbarui
+  #validateIgUrl(url) {
+    const patterns = [
+      /https?:\/\/(www\.)?instagram\.com\/(p|reel|tv|stories)\/[\w-]+\/?/,
+      /https?:\/\/instagram\.com\/stories\/[\w-]+\/\d+\/?/,
+      /https?:\/\/(www\.)?instagr\.am\/(p|reel|tv|stories)\/[\w-]+\/?/
+    ];
+    return patterns.some(pattern => pattern.test(url));
+  }
+
+  // Ekstrak metadata dengan error handling
+  #extractMetadata(data) {
     try {
-      console.log(`[FastCheck] Mencoba mengecek konten dari URL: ${url}`);
-      const resp = await axios.get(url);
-      console.log(`[FastCheck] Berhasil mendapatkan content-type: ${resp.headers["content-type"]}`);
-      return resp.headers["content-type"];
+      return {
+        username: data.author?.username || data.author?.name || 'N/A',
+        caption: data.caption?.text || 'Tidak ada caption',
+        likes: data.like_count || data.edge_media_preview_like?.count || 0,
+        comments: data.comment_count || data.edge_media_to_comment?.count || 0,
+        timestamp: data.taken_at_timestamp || Date.now(),
+        duration: data.video_duration || 0
+      };
     } catch (error) {
-      console.error(`[FastCheck] Error saat mengecek konten:`, error);
-      throw new Error(`Gagal memeriksa konten: ${error.message}`);
+      log.error(`Gagal ekstrak metadata: ${error.message}`, { stack: error.stack });
+      return null;
     }
   }
 
-  // Validasi URL post Instagram
-  #isPostUrl(url) {
-    console.log(`[URLValidator] Memeriksa URL post: ${url}`);
-    const regex =
-      /(https?:\/\/(?:www\.)?instagram\.com\/(p|reel|tv)\/([^/?#&]+)).*/;
-    const isValid = regex.test(url);
-    console.log(`[URLValidator] URL post valid: ${isValid}`);
-    return isValid;
+  // Ekstrak URL media dengan penanganan berbagai tipe konten
+  #extractMediaUrls(data) {
+    try {
+      const media = [];
+      
+      // Handle video content
+      if (data.video_versions) {
+        const bestVideo = data.video_versions.reduce((prev, current) => 
+          (current.height > prev.height) ? current : prev
+        );
+        media.push({
+          type: "video",
+          url: bestVideo.url,
+          quality: `${bestVideo.height}p`,
+          width: bestVideo.width,
+          height: bestVideo.height
+        });
+      }
+
+      // Handle image content
+      if (data.image_versions2) {
+        const bestImage = data.image_versions2.candidates.reduce((prev, current) => 
+          (current.width > prev.width) ? current : prev
+        );
+        media.push({
+          type: "image",
+          url: bestImage.url,
+          width: bestImage.width,
+          height: bestImage.height
+        });
+      }
+
+      // Handle carousel content
+      if (data.carousel_media) {
+        data.carousel_media.forEach(item => {
+          if (item.video_versions) {
+            media.push({
+              type: "video",
+              url: item.video_versions[0].url,
+              quality: `${item.video_versions[0].height}p`,
+              width: item.video_versions[0].width,
+              height: item.video_versions[0].height
+            });
+          }
+          if (item.image_versions2) {
+            media.push({
+              type: "image",
+              url: item.image_versions2.candidates[0].url,
+              width: item.image_versions2.candidates[0].width,
+              height: item.image_versions2.candidates[0].height
+            });
+          }
+        });
+      }
+
+      return media;
+    } catch (error) {
+      log.error(`Gagal ekstrak media: ${error.message}`, { stack: error.stack });
+      return [];
+    }
   }
 
-  // Validasi URL story Instagram
-  #isStoryUrl(url) {
-    console.log(`[URLValidator] Memeriksa URL story: ${url}`);
-    const regex =
-      /(https?:\/\/(?:www\.)?instagram\.com\/(s|stories)\/([^/?#&]+)).*/;
-    const isValid = regex.test(url);
-    console.log(`[URLValidator] URL story valid: ${isValid}`);
-    return isValid;
-  }
-
-  // Download post Instagram
+  // Download post dengan penanganan struktur data baru
   async #downloadPost(url) {
     try {
-      console.log(`[PostDownloader] Memulai proses download post dari: ${url}`);
+      const response = await axios.get(`${url}?__a=1&__d=dis`, { headers: this.headers });
+      const postData = response.data.items[0];
       
-      console.log(`[PostDownloader] Mengakses indown.io...`);
-      const res = await axios.get("https://indown.io/", {
-        headers: this.headers,
-      });
-      console.log(`[PostDownloader] Berhasil mengakses indown.io`);
+      if (!postData) {
+        throw new Error('Struktur data post tidak valid');
+      }
 
-      const _$ = cheerio.load(res.data);
-      console.log(`[PostDownloader] Berhasil memuat HTML dengan cheerio`);
+      const metadata = this.#extractMetadata(postData);
+      const mediaUrls = this.#extractMediaUrls(postData);
 
-      const formData = {
-        link: url,
-        referer: _$("input[name=referer]").val(),
-        locale: _$("input[name=locale]").val(),
-        _token: _$("input[name=_token]").val(),
+      return {
+        success: true,
+        metadata: {
+          ...metadata,
+          url,
+          media_count: mediaUrls.length
+        },
+        media: mediaUrls
       };
-
-      console.log(`[PostDownloader] Form data yang akan dikirim:`, formData);
-
-      console.log(`[PostDownloader] Mengirim request download ke indown.io...`);
-      const { data } = await axios.post(
-        "https://indown.io/download",
-        new URLSearchParams(formData),
-        {
-          headers: {
-            ...this.headers,
-            cookie: res.headers["set-cookie"]?.join("; "),
-          },
-        }
-      );
-      console.log(`[PostDownloader] Berhasil mendapatkan response download`);
-
-      const $ = cheerio.load(data);
-      const __$ = cheerio.load($("#result").html());
-      const result = [];
-
-      console.log(`[PostDownloader] Memproses hasil video...`);
-      __$("video").each(function () {
-        const videoUrl = $(this).find("source").attr("src");
-        console.log(`[PostDownloader] Menemukan video URL: ${videoUrl}`);
-        result.push({
-          type: "video",
-          url: videoUrl,
-        });
-      });
-
-      console.log(`[PostDownloader] Memproses hasil gambar...`);
-      __$("img").each(function () {
-        const imgUrl = $(this).attr("src");
-        console.log(`[PostDownloader] Menemukan image URL: ${imgUrl}`);
-        result.push({
-          type: "image",
-          url: imgUrl,
-        });
-      });
-
-      console.log(`[PostDownloader] Total media ditemukan: ${result.length}`);
-      return result;
     } catch (error) {
-      console.error(`[PostDownloader] Error detail:`, error);
-      throw new Error(`Gagal mengunduh post: ${error.message}`);
+      log.error(`Gagal download post: ${error.message}`, { 
+        url,
+        error: error.response?.data,
+        stack: error.stack 
+      });
+      throw new Error(`Gagal memproses post: ${error.message}`);
     }
   }
 
-  // Download story Instagram
+  // Download story dengan API endpoint terbaru
   async #downloadStory(url) {
     try {
-      console.log(`[StoryDownloader] Memulai download story dari: ${url}`);
-      
-      const apiUrl = `https://instasupersave.com/api/ig/story?url=${url}`;
-      console.log(`[StoryDownloader] Mengakses API: ${apiUrl}`);
-      
+      const storyId = url.split("/")[4];
+      const apiUrl = `https://www.instagram.com/stories/reels_media/?reel_ids=${storyId}`;
       const response = await axios.get(apiUrl, { headers: this.headers });
-      console.log(`[StoryDownloader] Berhasil mendapatkan response dari API`);
       
-      const result = response.data.result[0];
-      console.log(`[StoryDownloader] Data result:`, result);
-
-      if ("video_versions" in result) {
-        console.log(`[StoryDownloader] Terdeteksi sebagai video story`);
-        const videoUrl = result.video_versions[0].url;
-        const type = await this.#fastCheck(videoUrl);
-        console.log(`[StoryDownloader] Video URL: ${videoUrl}, Type: ${type}`);
-        return { type, url: videoUrl };
-      } else {
-        console.log(`[StoryDownloader] Terdeteksi sebagai image story`);
-        const imageUrl = result?.image_versions2?.candidates[0].url;
-        const type = await this.#fastCheck(imageUrl);
-        console.log(`[StoryDownloader] Image URL: ${imageUrl}, Type: ${type}`);
-        return { type, url: imageUrl };
+      const storyData = response.data.reels_media[0].items[0];
+      if (!storyData) {
+        throw new Error('Data story tidak ditemukan');
       }
+
+      return {
+        type: storyData.video_versions ? "video" : "image",
+        url: storyData.video_versions?.[0]?.url || storyData.image_versions2.candidates[0].url,
+        duration: storyData.video_duration || 0,
+        timestamp: storyData.taken_at,
+        mentions: storyData.mentions || []
+      };
     } catch (error) {
-      console.error(`[StoryDownloader] Error detail:`, error);
-      throw new Error(`Gagal mengunduh story: ${error.message}`);
+      log.error(`Gagal download story: ${error.message}`, {
+        url,
+        error: error.response?.data,
+        stack: error.stack
+      });
+      throw new Error(`Gagal memproses story: ${error.message}`);
     }
   }
 
-  // Metode publik untuk mengunduh konten Instagram
   async download(url) {
     try {
-      console.log(`[Downloader] Memulai proses download untuk URL: ${url}`);
+      log.info(`Memproses URL Instagram: ${url}`);
       
-      if (this.#isPostUrl(url)) {
-        console.log(`[Downloader] Mendeteksi sebagai URL post`);
-        const result = await this.#downloadPost(url);
-        console.log(`[Downloader] Download post berhasil`);
-        return { success: true, type: "post", data: result };
-      } else if (this.#isStoryUrl(url)) {
-        console.log(`[Downloader] Mendeteksi sebagai URL story`);
-        const result = await this.#downloadStory(url);
-        console.log(`[Downloader] Download story berhasil`);
-        return { success: true, type: "story", data: result };
-      } else {
-        console.log(`[Downloader] URL tidak valid`);
-        throw new Error("URL Instagram tidak valid");
+      if (!this.#validateIgUrl(url)) {
+        throw new Error("Format URL Instagram tidak valid");
       }
+
+      if (url.includes("/stories/")) {
+        const storyResult = await this.#downloadStory(url);
+        return { 
+          success: true,
+          type: 'story',
+          ...storyResult
+        };
+      }
+
+      const postResult = await this.#downloadPost(url);
+      return {
+        ...postResult,
+        type: 'post'
+      };
+      
     } catch (error) {
-      console.error(`[Downloader] Error dalam proses download:`, error);
-      return { success: false, error: error.message };
+      log.error(`Error di command igdl: ${error.message}`, {
+        url,
+        stack: error.stack
+      });
+      return {
+        success: false,
+        error: error.message,
+        type: 'unknown'
+      };
     }
   }
 }

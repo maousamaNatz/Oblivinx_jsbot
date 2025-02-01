@@ -122,6 +122,25 @@ const memoryMonitor = {
 
 // Konfigurasi bot
 let config = {
+
+  logging: {
+    colors: {
+      error: 'red bold',
+      warn: 'yellow bold',
+      info: 'green bold',
+      success: 'cyan bold',
+      debug: 'blue bold',
+      trace: 'white bold'
+    },
+    levels: {
+      error: 0,
+      warn: 1,
+      info: 2,
+      success: 3,
+      debug: 4,
+      trace: 5
+    }
+  },
   gameData: {
     tebakGambar: loadGameData("tebakGambar.json"),
     tebakKata: loadGameData("tebakKata.json"),
@@ -245,13 +264,15 @@ let config = {
   }
 });
 
-// Perbaikan logging
-botLogger.info(`Loaded bot configuration:`, {
-  botName: config.botName,
-  owner: config.owner,
-  prefix: config.prefix,
-  sessionName: config.sessionName
-});
+// Gunakan logger setelah config sepenuhnya diinisialisasi
+if(botLogger) {
+  botLogger.info(`Loaded bot configuration:`, {
+    botName: config.botName,
+    owner: config.owner,
+    prefix: config.prefix,
+    sessionName: config.sessionName
+  });
+}
 
 // Tambahkan fungsi cleanup di bot.js
 function cleanupSessions() {

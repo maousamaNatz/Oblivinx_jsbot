@@ -2,6 +2,8 @@ const { isAdmin } = require('../handler/permission');
 const { botLogger } = require('../utils/logger');
 const { downloadMediaMessage } = require('@whiskeysockets/baileys');
 const prefix = process.env.PREFIX;
+const langId = require('../i18n/langId');
+
 Oblixn.cmd({
     name: 'group',
     alias: ['grup'],
@@ -18,7 +20,7 @@ Oblixn.cmd({
             botLogger.info(`Processing group command from: ${normalizedSenderId}`);
 
             if (!groupId?.endsWith('@g.us')) {
-                return m.reply('Perintah ini hanya dapat digunakan di dalam grup!');
+                return m.reply(langId.errors.group_only);
             }
 
             // Cek admin status sekali saja dan simpan hasilnya
@@ -28,7 +30,7 @@ Oblixn.cmd({
             ]);
 
             if (!botAdmin) {
-                return m.reply('Bot harus menjadi admin untuk menggunakan fitur ini!');
+                return m.reply(langId.errors.bot_admin_required);
             }
 
             if (!isGroupAdmin) {
@@ -42,27 +44,10 @@ Oblixn.cmd({
 
             const args = t.args;
             if (!args.length) {
-                return m.reply(`📝 *Hallo ${username} berikut adalah perintah yang tersedia untuk command grup*
-▢ ${prefix}group open - Membuka grup
-▢ ${prefix}group close - Menutup grup
-▢ ${prefix}group link - Mendapatkan link invite
-▢ ${prefix}group revoke - Mereset link invite
-▢ ${prefix}group name <text> - Mengubah nama grup
-▢ ${prefix}group desc <text> - Mengubah deskripsi grup
-▢ ${prefix}group promote @user - Menjadikan member sebagai admin
-▢ ${prefix}group demote @user - Menurunkan admin menjadi member
-▢ ${prefix}group leave - Mengeluarkan bot dari grup
-▢ ${prefix}group info - Menampilkan informasi grup
-▢ ${prefix}hidetag <text> - Mention semua member dengan pesan
-▢ ${prefix}tagall <text> - Mention semua member dengan pesan
-▢ ${prefix}tagadmin - Mention semua admin dengan pesan
-▢ ${prefix}kick @user - Mengeluarkan anggota dari grup
-▢ ${prefix}add <number> - Menambahkan anggota ke grup
-▢ ${prefix}mute on - Mengaktifkan mode senyap
-▢ ${prefix}mute off - Menonaktifkan mode senyap
-▢ ${prefix}chatmode admin - Hanya admin yang bisa chat
-▢ ${prefix}chatmode all - Semua member bisa chat
-▢ ${prefix}setppgc - Mengubah foto profil grup`);
+                await m.reply(langId.commands.group.menu
+                    .replace('{username}', username)
+                    .replace(/{prefix}/g, prefix)
+                );
             }
 
             const command = args[0].toLowerCase();
@@ -70,23 +55,23 @@ Oblixn.cmd({
                 case 'open':
                 case 'buka':
                     await Oblixn.sock.groupSettingUpdate(groupId, 'not_announcement');
-                    m.reply('✅ Grup telah dibuka!');
+                    await m.reply(langId.commands.group.success_open);
                     break;
 
                 case 'close':
                 case 'tutup':
                     await Oblixn.sock.groupSettingUpdate(groupId, 'announcement');
-                    m.reply('✅ Grup telah ditutup!');
+                    await m.reply(langId.commands.group.success_close);
                     break;
 
                 case 'link':
                     const code = await Oblixn.sock.groupInviteCode(groupId);
-                    m.reply(`🔗 Link grup: https://chat.whatsapp.com/${code}`);
+                    await m.reply(langId.commands.group.link.replace('{link}', `https://chat.whatsapp.com/${code}`));
                     break;
 
                 case 'revoke':
                     await Oblixn.sock.groupRevokeInvite(groupId);
-                    m.reply('✅ Link grup telah direset!');
+                    await m.reply(langId.commands.group.reset_link);
                     break;
 
                 case 'name':
@@ -95,7 +80,7 @@ Oblixn.cmd({
                     }
                     const newName = args.slice(1).join(' ');
                     await Oblixn.sock.groupUpdateSubject(groupId, newName);
-                    m.reply(`✅ Nama grup telah diubah menjadi: ${newName}`);
+                    await m.reply(langId.commands.group.name_updated.replace('{name}', newName));
                     break;
 
                 case 'desc':
@@ -104,7 +89,7 @@ Oblixn.cmd({
                     }
                     const newDesc = args.slice(1).join(' ');
                     await Oblixn.sock.groupUpdateDescription(groupId, newDesc);
-                    m.reply('✅ Deskripsi grup telah diperbarui!');
+                    await m.reply(langId.commands.group.desc_updated);
                     break;
 
                 case 'promote':
@@ -112,7 +97,7 @@ Oblixn.cmd({
                         return m.reply('Tag member yang ingin dijadikan admin!');
                     }
                     await Oblixn.sock.groupParticipantsUpdate(groupId, [m.mentions[0]], 'promote');
-                    m.reply('✅ Berhasil menjadikan member sebagai admin!');
+                    await m.reply(langId.commands.group.promote_success);
                     break;
 
                 case 'demote':
@@ -120,11 +105,11 @@ Oblixn.cmd({
                         return m.reply('Tag admin yang ingin diturunkan!');
                     }
                     await Oblixn.sock.groupParticipantsUpdate(groupId, [m.mentions[0]], 'demote');
-                    m.reply('✅ Berhasil menurunkan admin menjadi member!');
+                    await m.reply(langId.commands.group.demote_success);
                     break;
 
                 case 'leave':
-                    await m.reply('��� Selamat tinggal! Bot akan keluar dari grup.');
+                    await m.reply(langId.commands.group.leave);
                     await Oblixn.sock.groupLeave(groupId);
                     break;
 
@@ -142,7 +127,14 @@ Oblixn.cmd({
                         `📅 *Dibuat:* ${new Date(metadata.creation * 1000).toLocaleString()}\n` +
                         `💬 *Deskripsi:*\n${metadata.desc || 'Tidak ada deskripsi'}`;
                     
-                    m.reply(info);
+                    await m.reply(langId.commands.group.info
+                        .replace('{name}', metadata.subject)
+                        .replace('{members}', metadata.participants.length)
+                        .replace('{admins}', admins.length)
+                        .replace('{id}', metadata.id)
+                        .replace('{created}', new Date(metadata.creation * 1000).toLocaleString())
+                        .replace('{desc}', metadata.desc || 'Tidak ada deskripsi')
+                    );
                     break;
                 default:
                     m.reply(`📝 *Penggunaan:*
