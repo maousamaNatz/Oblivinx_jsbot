@@ -102,7 +102,6 @@ Chatbot_whatsapp/
 │   ├── handler/          # Sistem permission
 │   ├── lib/              # Library eksternal
 │   └── utils/            # Helper functions
-├── tests/                # Unit testing
 ├── bot.js                # Entry point
 └── bot.sql               # Skema database
 ```
@@ -110,15 +109,34 @@ Chatbot_whatsapp/
 ## 📐 Arsitektur Sistem
 ```mermaid
 flowchart TD
-    A[User] --> B[WhatsApp Message]
-    B --> C[Baileys WS]
-    C --> D{Command?}
-    D -->|Ya| E[Command Handler]
-    D -->|Tidak| F[AI Processing]
-    E --> G[Database MySQL]
-    F --> G
-    G --> H[Response Generator]
-    H --> A
+    A[Pengguna] --> B[Pesan WhatsApp]
+    B --> C{Command?}
+    C -->|Ya| D[Command Handler]
+    C -->|Tidak| E[AI Processing]
+    
+    D --> F[Database MySQL]
+    E --> F
+    
+    subgraph Database
+        F --> G[Tabel Users]
+        F --> H[Tabel Groups]
+        F --> I[Tabel BannedUsers]
+        F --> J[Tabel BotInstances]
+        F --> K[Tabel Leaderboard]
+        F --> L[Tabel GroupSettings]
+        F --> M[Tabel UserActivityLogs]
+        F --> N[Tabel BotQRCodes]
+        
+        G -->|One-to-Many| H
+        G -->|One-to-Many| I
+        H -->|One-to-Many| L
+        G -->|One-to-Many| K
+        G -->|One-to-Many| M
+        J -->|One-to-One| N
+    end
+    
+    F --> O[Response Generator]
+    O --> A
 ```
 
 ## 📝 Penggunaan
@@ -175,7 +193,6 @@ npm run migrate
 - Limit API key tercapai
 - Model AI tidak tersedia
 - Error koneksi ke provider AI
-```
 
 ## 📜 Lisensi
 Proyek ini dilisensikan di bawah [MIT License](LICENSE) dengan tambahan ketentuan khusus ORBIT STUDIO:

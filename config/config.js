@@ -254,7 +254,13 @@ let config = {
     dir: 'logs',
     errorLog: 'error.log',
     combinedLog: 'combined.log'
-  }
+  },
+  stalkApi: {
+    key: process.env.STALK_API_KEY,
+    igUrl: "https://api.example.com/instagram",
+    tiktokUrl: "https://api.example.com/tiktok",
+    githubUrl: "https://api.example.com/github"
+  },
 };
 
 // Validasi nomor wajib
