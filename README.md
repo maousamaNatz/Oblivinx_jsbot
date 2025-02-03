@@ -15,200 +15,178 @@ Bot WhatsApp canggih berbasis Node.js menggunakan [Baileys](https://github.com/W
 - [Persyaratan](#-persyaratan)
 - [Instalasi](#-instalasi)
 - [Konfigurasi](#-konfigurasi)
+- [Struktur Proyek](#-struktur-proyek)
+- [Environment Variables](#-environment-variables)
+- [Arsitektur Sistem](#-arsitektur-sistem)
 - [Penggunaan](#-penggunaan)
-- [Pedoman Pengembangan](#-pedoman-pengembangan)
 - [FAQ](#-faq)
-- [Tim Pengembang](#-tim-pengembang)
-- [Pembaruan](#-pembaruan)
 - [Lisensi](#-lisensi)
 - [Kontribusi](#-kontribusi)
-- [Kontak](#-kontak)
 
 ## 🚀 Fitur Utama
-
 ### 🤖 Integrasi AI
-- **Model GPT**
-  - Dukungan GPT-3.5-turbo & GPT-4
-  - Template prompt kustom
-  - Manajemen memori percakapan
-  
-- **Multimodel AI**
-  - Claude Instant & Claude 2
-  - Gemini Pro
-  - Model NATZ v2.0
+- Dukungan model GPT-3.5/4, Claude, Gemini
+- Image generation dengan DALL-E 3
+- NLP untuk pemrosesan pesan alami
 
-### 👥 Manajemen Grup
-- Sistem anti-spam dengan ML
-- Filter link otomatis + whitelist
-- Pesan selamat datang/perpisahan
-- Statistik aktivitas grup
-- Pembuat polling & broadcast
+### 📥 Downloader Konten
+- YouTube (video/audio)
+- Instagram (post/reel)
+- Facebook (video)
+- TikTok (video)
 
-### 🛠 Alat Bantu
-- Pencarian Wikipedia multi-bahasa
-- Konverter mata uang & prakiraan cuaca
-- Downloader media sosial:
-  - YouTube (video/audio)
-  - TikTok tanpa watermark
-  - Instagram (post/reels/story)
-  - Pinterest
+### 🎮 Sistem Game
+- RPG berbasis teks
+- Mini games (tebak gambar, trivia)
+- Sistem leveling dan experience
 
-### 🎮 Fitur Hiburan
-- Game RPG & kuis interaktif
-- Pembuat stiker otomatis
-- Text-to-Speech (25+ bahasa)
-- Generator meme acak
-- Sistem memo & catatan grup
+### 🛡️ Manajemen Grup
+- Auto welcome message
+- Anti-spam/link
+- Fitur admin (kick, ban, promote)
+- Sistem voting
 
-## 💻 Persyaratan
+## 📋 Persyaratan
+- Node.js 16.x+
+- MySQL 8.0+
+- RAM 2GB+ (Rekomendasi 4GB)
+- Storage 500MB+ (Untuk media cache)
 
-- Node.js v16.x atau lebih baru
-- MySQL v8.0 atau lebih baru
-- Redis (direkomendasikan untuk caching)
-- PM2 untuk environment production
-- Git & CLI dasar
-
-## 📥 Instalasi
-
-1. Clone repositori
+## 💻 Instalasi
 ```bash
-git clone https://github.com/maousamaNatz/boring1.git
-cd Chatbot_whatsapp
-```
+# Clone repositori
+git clone https://github.com/maousamaNatz/Oblivinx_jsbot.git
+cd Oblivinx_jsbot
 
-2. Install dependensi
-```bash
+# Install dependencies
 npm install
-```
 
-3. Setup environment
-```bash
-cp .env.example .env
-```
+# Jalankan migrasi database
+npm run migrate:fresh
 
-4. Inisialisasi database
-```bash
-npm run migrate
-npm run seed
-```
-
-5. Jalankan bot
-```bash
-# Mode development
+# Mulai bot
 npm run dev
-
-# Mode production
-npm run prod
 ```
 
 ## ⚙️ Konfigurasi
-
-### Variabel Environment (.env)
-```env
+Buat file `.env` di root direktori:
+```ini
 # Database
 DB_HOST=localhost
-DB_USER=root
-DB_PASSWORD=
-DB_NAME=bot_whatsapp
+DB_USER=user
+DB_PASSWORD=password
+DB_NAME=natzbot
 
-# WhatsApp
-OWNER_NUMBER_ONE=081910058235
-OWNER_NUMBER_TWO=083156981865
+# API Keys
+OPENAI_KEY=sk-xxx
+COINMARKETCAP_KEY=xxx
+
+# Konfigurasi Bot
 PREFIX=!
-
-# AI
-ENDPOINT_PROVIDER=https://heckerai.com/v1/chat/completions
-PROVIDER_API_KEY=kunci_anda_disini
+MAX_CONCURRENT=5
+SESSION_TIMEOUT=3600
+RATE_LIMIT=10
 ```
 
-### Konfigurasi Tambahan
-- Simpan file session di `./sessions`
-- File game & template di `./src/json/games`
-- Backup otomatis setiap 1 jam ke `./store`
-
-## 📝 Pedoman Pengembangan
-
-### Struktur Kode
+## 📂 Struktur Proyek
 ```
-/src
-  /handlers   # Command handlers
-  /utils      # Utilities & helpers
-  /json       # Data templates
-  /middleware # Sistem middleware
+Chatbot_whatsapp/
+├── auth_info_baileys/    # Session storage
+├── config/               # Konfigurasi aplikasi
+│   ├── api/              # Integrasi API eksternal
+│   ├── dbConf/           # Koneksi database
+│   └── memoryAsync/      # Sistem penyimpanan
+├── database/             # Skema dan migrasi DB
+├── src/
+│   ├── commands/         # Handler command
+│   ├── handler/          # Sistem permission
+│   ├── lib/              # Library eksternal
+│   └── utils/            # Helper functions
+├── tests/                # Unit testing
+├── bot.js                # Entry point
+└── bot.sql               # Skema database
 ```
 
-### Aturan Kode
-- Gunakan ESLint dengan konfigurasi standar
-- Dokumentasi wajib untuk fungsi kompleks
-- Test unit minimal 70% coverage
-- Komit mengikuti konvensi Conventional Commits
+## 📐 Arsitektur Sistem
+```mermaid
+flowchart TD
+    A[User] --> B[WhatsApp Message]
+    B --> C[Baileys WS]
+    C --> D{Command?}
+    D -->|Ya| E[Command Handler]
+    D -->|Tidak| F[AI Processing]
+    E --> G[Database MySQL]
+    F --> G
+    G --> H[Response Generator]
+    H --> A
+```
 
-### Keamanan
-- Validasi semua input pengguna
-- Enkripsi data sensitif dengan AES-256
-- Rate limiting untuk API eksternal
-- Audit keamanan mingguan
+## 📝 Penggunaan
+### Command Dasar
+```
+!help - Menampilkan menu bantuan
+!ping - Cek status bot
+!info - Info sistem bot
+!donate - Support pengembangan
+```
 
-## 👥 Tim Pengembang
-
-**Project Lead**  
-- **Rio Belly** - [GitHub](https://github.com/RioBelly)  
-  `Owner | Arsitektur Sistem`
-
-- **Bagas Saputra** - [GitHub](https://github.com/BagasSaputra)  
-  `Owner | Core Developer`
-
-**Core Team**  
-- **MaousamaNatz** - [GitHub](https://github.com/maousamaNatz)  
-  `Lead Backend Developer`
-
-- **Rehan Pratama** - [GitHub](https://github.com/Rehanpratama)  
-  `AI Specialist`
-
-- **SkyDcode** - [GitHub](https://github.com/SkyyDcode)  
-  `Frontend Integration`
+### Contoh AI
+```
+!gpt <pertanyaan> - Tanya ke GPT-4
+!dalle <prompt> - Generate gambar AI
+!translate <teks> - Terjemahkan teks
+```
 
 ## ❓ FAQ
+### 🔄 Reset Session
+**Q:** Cara mereset session/login bot?  
+**A:** 
+```bash
+1. Hapus folder auth_info_baileys
+2. Jalankan ulang bot dengan `npm run dev`
+```
 
-### Umum
-**Q: Apakah bot ini gratis?**  
-A: Ya, sepenuhnya open-source di bawah lisensi MIT
+### 🛠️ Error Database
+**Q:** Muncul error koneksi database saat start bot?  
+**A:** Lakukan pengecekan:
+1. Pastikan service MySQL aktif
+2. Verifikasi kredensial di `.env` sesuai
+3. Cek port database (default:3306) tidak terblokir
 
-**Q: Bagaimana melaporkan bug?**  
-A: Buat issue di GitHub atau laporkan ke grup WhatsApp
+### 📶 Bot Tidak Merespon
+**Q:** Bot tidak merespon command/message?  
+**A:** 
+1. Cek file log terbaru di `logs/error.log`
+2. Verifikasi koneksi internet server
+3. Pastikan izin baca/tulis di folder project
 
-### Teknis
-**Q: Cara backup session?**  
-A: Session otomatis tersimpan di folder `./sessions`
+### 🔄 Update Bot
+**Q:** Cara update ke versi terbaru?  
+**A:** 
+```bash
+git pull origin main
+npm install
+npm run migrate
+```
 
-**Q: Support multi-device?**  
-A: Ya, menggunakan sistem multi-device Baileys
+### 🤖 Batas Penggunaan AI
+**Q:** Kenapa command AI tidak bekerja?  
+**A:** Kemungkinan karena:
+- Limit API key tercapai
+- Model AI tidak tersedia
+- Error koneksi ke provider AI
+```
 
-## 📋 Pembaruan
-
-### v0.0.4
-- Perbaikan sistem download YouTube
-- Optimasi manajemen memori AI
-- Penambahan middleware keamanan
-- Peningkatan stabilitas session
-
-[Lihat changelog lengkap](CHANGELOG.md)
-
-## 📄 Lisensi
-
-Dilisensikan di bawah [MIT License](LICENSE) - Bebas digunakan, dimodifikasi, dan didistribusikan
+## 📜 Lisensi
+Proyek ini dilisensikan di bawah [MIT License](LICENSE) dengan tambahan ketentuan khusus ORBIT STUDIO:
+- Dilarang komersialisasi tanpa izin
+- Wajib mencantumkan credit
+- Update lisensi berlaku retroaktif
 
 ## 🤝 Kontribusi
+Lihat [CONTRIBUTING.md](CONTRIBUTING.md) untuk panduan lengkap. 
 
-Ikuti panduan di [CONTRIBUTING.md](CONTRIBUTING.md). Persyaratan utama:
-1. Fork repository
-2. Buat branch fitur (`feat/nama-fiturnya`)
-3. Commit perubahan
-4. Push ke branch
-5. Buat Pull Request
-
-## 📞 Kontak
-
-- Komunitas WhatsApp: [Oblivinx Group](https://chat.whatsapp.com/CHANNEL_ID)
-- Email Support: riobelly@gmail.com
-- Issue Tracker: [GitHub Issues](https://github.com/maousamaNatz/boring1/issues)
+**Kontak Tim:**
+- Email: dev@orbitstudio.id
+- Discord: [Join Server](https://discord.gg/orbitstudio)
+- Dokumentasi: [docs.orbitstudio.id](https://docs.orbitstudio.id)

@@ -122,7 +122,7 @@ const memoryMonitor = {
 
 // Konfigurasi bot
 let config = {
-
+  number: process.env.PHONE_NUMBER || '',
   logging: {
     colors: {
       error: 'red bold',
@@ -256,6 +256,12 @@ let config = {
     combinedLog: 'combined.log'
   }
 };
+
+// Validasi nomor wajib
+if (!config.number) {
+  console.error('❌ ERROR: Nomor bot utama harus diisi di .env (PHONE_NUMBER)');
+  process.exit(1);
+}
 
 // Buat direktori jika belum ada
 [SESSIONS_PATH, STORE_PATH].forEach((dir) => {

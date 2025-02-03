@@ -154,19 +154,37 @@ npm run migrate
 npm run seed
 ```
 
-### 3. Development Commands
+### 3. Konfigurasi Database
 ```bash
-# Start development server
-npm run dev
+# Buat database MySQL
+CREATE DATABASE natzbot;
 
-# Run tests
-npm run test
+# Jalankan migrasi
+npm run migrate
 
-# Lint code
-npm run lint
+# Atur environment variables di .env
+DB_HOST=localhost
+DB_USER=user
+DB_PASSWORD=password
+DB_NAME=natzbot
+```
 
-# Build production
-npm run build
+### 4. Struktur Direktori
+```
+Chatbot_whatsapp/
+├── auth_info_baileys/    # Session storage
+├── config/               # Konfigurasi aplikasi
+│   ├── api/              # Integrasi API eksternal
+│   ├── dbConf/           # Konfigurasi database  
+│   └── memoryAsync/      # Sistem penyimpanan
+├── database/             # Skema dan migrasi DB
+├── src/
+│   ├── commands/         # Semua command handler
+│   ├── handler/          # Sistem permission
+│   ├── json/             # Data statis 
+│   ├── lib/              # Library eksternal
+│   └── utils/            # Helper functions
+└── tests/                # Unit testing
 ```
 
 ## Testing
@@ -186,6 +204,20 @@ describe('Calculator', () => {
 - Test file harus berakhiran `.test.js`
 - Mock external services
 
+### 3. Contoh Testing
+```javascript
+// Contoh test menggunakan Mocha
+const { expect } = require('chai');
+const { formatBytes } = require('../src/utils/helper');
+
+describe('Helper Functions', () => {
+  it('should format bytes correctly', () => {
+    expect(formatBytes(1024)).to.equal('1 KB');
+    expect(formatBytes(1048576)).to.equal('1 MB');
+  });
+});
+```
+
 ## Documentation
 
 ### 1. Inline Documentation
@@ -203,9 +235,38 @@ describe('Calculator', () => {
 - Tambahkan screenshot jika perlu
 - Update versi di package.json
 
+### 4. Environment Variables
+```
+API_KEY=<key_dall_e>
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=
+MAX_CONCURRENT=5
+SESSION_TIMEOUT=3600
+RATE_LIMIT=10
+```
+
+### 5. Diagram Arsitektur
+```
++-------------------+     +-----------------+
+|   WhatsApp Web    |<--->|   Baileys WS    |
++-------------------+     +-----------------+
+                               ↑  ↓
++-------------------+     +-----------------+
+|  Command Handler  |<--->|  Message Queue  |
++-------------------+     +-----------------+
+                               ↑  ↓
++-------------------+     +-----------------+
+|  Database MySQL   |<--->|   Cache Redis   |
++-------------------+     +-----------------+
+```
+
 ## Lisensi
 
-Dengan berkontribusi, Anda setuju bahwa kontribusi Anda akan dilisensikan di bawah [MIT License](LICENSE).
+Dengan berkontribusi, Anda setuju:
+- Mematuhi tambahan ketentuan lisensi ORBIT STUDIO
+- Memberikan credit ke kontributor
+- Tidak menggunakan merek dagang "NatzBot" untuk komersialisasi
 
 ## Kontak
 

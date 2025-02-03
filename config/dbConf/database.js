@@ -314,6 +314,57 @@ setInterval(async () => {
   }
 }, 300000); // Setiap 5 menit
 
+async function saveBotCredentials(number, credentials) {
+  try {
+    const [result] = await pool.execute(
+      'INSERT INTO bot_instances (number, credentials) VALUES (?, ?) ' +
+      'ON DUPLICATE KEY UPDATE credentials = VALUES(credentials), status = "active"',
+      [number, JSON.stringify(credentials)]
+    );
+    return { success: true, message: 'Credentials saved' };
+  } catch (error) {
+    console.error('Error saving credentials:', error);
+    return { success: false, message: 'Failed to save credentials' };
+  }
+}
+
+async function getBotCredentials(number) {
+  try {
+    const [rows] = await pool.execute(
+      'SELECT credentials FROM bot_instances WHERE number = ?',
+      [number]
+    );
+    return rows[0] ? JSON.parse(rows[0].credentials) : null;
+  } catch (error) {
+    console.error('Error getting credentials:', error);
+    return null;
+  }
+}
+
+async function handleOTPVerification(number, otp) {
+    try {
+        const [rows] = await pool.execute(
+            'SELECT * FROM bot_otp WHERE number = ? AND expires_at > NOW()',
+            [number]
+        );
+        
+        if(rows.length === 0) return false;
+        
+        if(rows[0].otp === otp) {
+            await pool.execute(
+                'UPDATE bot_instances SET status = "active" WHERE number = ?',
+                [number]
+            );
+            return true;
+        }
+        
+        return false;
+    } catch (error) {
+        console.error('OTP Error:', error);
+        return false;
+    }
+}
+
 module.exports = {
     pool,
     banUser,
@@ -321,5 +372,8 @@ module.exports = {
     checkUserStatus,
     blockUserBySystem,
     getListBannedUsers,
-    registerUser
+    registerUser,
+    saveBotCredentials,
+    getBotCredentials,
+    handleOTPVerification
 }; 

@@ -4,6 +4,8 @@ const os = require("os");
 const packageJson = require("../../package.json");
 const fs = require("fs");
 const path = require("path");
+const { permissionHandler } = require("../../src/handler/permission");
+
 async function loadCommands() {
   const commands = new Map();
   const commandsDir = path.join(__dirname);
@@ -44,26 +46,37 @@ async function loadCommands() {
 const commands = loadCommands();
 console.log(commands);
 // Fungsi untuk menampilkan info bot
-global.Oblixn.cmd({
-  name: "info",
-  alias: ["botinfo", "infobot"],
+Oblixn.cmd({
+  name: "botinfo",
+  alias: ["info", "status"],
   desc: "Menampilkan informasi bot",
   category: "info",
   async exec(msg) {
-    const { botName, owner, processor } = config;
-    const uptime = process.uptime();
-    const uptimeStr = formatUptime(uptime);
+    try {
+      // Tambahkan pengecekan izin
+      const isAdmin = await permissionHandler.isAdmin(msg.sender);
+      if (!isAdmin) {
+        return msg.reply("❌ Akses ditolak! Hanya admin yang bisa menggunakan command ini");
+      }
 
-    const infoText =
-      `🤖 *${botName} BOT INFO* 🤖\n\n` +
-      `👾 *Version:* v${packageJson.version}\n` +
-      `🧠 *Processor:* ${processor}\n` +
-      `⏰ *Uptime:* ${uptimeStr}\n` +
-      `💾 *Memory:* ${formatBytes(process.memoryUsage().heapUsed)}\n` +
-      `👑 *Owner:* ${owner.join(", ")}\n\n` +
-      `Gunakan *!help* untuk melihat daftar perintah.`;
+      const { botName, owner, processor } = config;
+      const uptime = process.uptime();
+      const uptimeStr = formatUptime(uptime);
 
-    await msg.reply(infoText);
+      const infoText =
+        `🤖 *${botName} BOT INFO* 🤖\n\n` +
+        `👾 *Version:* v${packageJson.version}\n` +
+        `🧠 *Processor:* ${processor}\n` +
+        `⏰ *Uptime:* ${uptimeStr}\n` +
+        `💾 *Memory:* ${formatBytes(process.memoryUsage().heapUsed)}\n` +
+        `👑 *Owner:* ${owner.join(", ")}\n\n` +
+        `Gunakan *!help* untuk melihat daftar perintah.`;
+
+      await msg.reply(infoText);
+    } catch (error) {
+      botLogger.error("Error dalam command botinfo:", error);
+      await msg.reply("❌ Terjadi kesalahan saat mengambil informasi bot");
+    }
   },
 });
 

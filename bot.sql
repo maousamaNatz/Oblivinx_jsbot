@@ -1,5 +1,21 @@
--- Tabel untuk pengguna
-CREATE TABLE `users` (
+-- Hapus constraint foreign key terlebih dahulu
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- Hapus tabel dengan urutan yang benar
+DROP TABLE IF EXISTS `groups`;
+DROP TABLE IF EXISTS `banned_users`;
+DROP TABLE IF EXISTS `users`;
+DROP TABLE IF EXISTS `bot_instances`;
+
+-- Hapus tabel lainnya yang mungkin ada dependensi
+DROP TABLE IF EXISTS `group_settings`;
+DROP TABLE IF EXISTS `message_history`;
+
+-- Setel ulang foreign key checks
+SET FOREIGN_KEY_CHECKS = 1;
+
+-- Kemudian buat ulang tabel dengan urutan yang benar
+CREATE TABLE IF NOT EXISTS `users` (
   `id` INT(11) NOT NULL AUTO_INCREMENT,
   `user_id` VARCHAR(255) NOT NULL UNIQUE, -- berisi phone number user
   `username` VARCHAR(255) DEFAULT NULL, -- berisi username user
@@ -34,7 +50,7 @@ CREATE TABLE `users` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Tabel untuk grup
-CREATE TABLE `groups` (
+CREATE TABLE IF NOT EXISTS `groups` (
   `id` INT(11) NOT NULL AUTO_INCREMENT,
   `group_id` VARCHAR(255) NOT NULL UNIQUE,
   `group_name` VARCHAR(255) DEFAULT NULL,
@@ -69,7 +85,7 @@ CREATE TABLE `groups` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Tabel untuk log aktivitas pengguna
-CREATE TABLE `user_activity_logs` (
+CREATE TABLE IF NOT EXISTS `user_activity_logs` (
   `id` INT(11) NOT NULL AUTO_INCREMENT,
   `user_id` VARCHAR(255) NOT NULL,
   `activity` ENUM('FARM_EXP', 'SPEND_COINS', 'EARN_COINS', 'LEVEL_UP') NOT NULL,
@@ -81,7 +97,7 @@ CREATE TABLE `user_activity_logs` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Tabel untuk leaderboard
-CREATE TABLE `leaderboard` (
+CREATE TABLE IF NOT EXISTS `leaderboard` (
   `id` INT(11) NOT NULL AUTO_INCREMENT,
   `group_id` VARCHAR(255) NOT NULL,
   `user_id` VARCHAR(255) NOT NULL,
@@ -96,7 +112,7 @@ CREATE TABLE `leaderboard` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Tabel untuk pengaturan grup
-CREATE TABLE `group_settings` (
+CREATE TABLE IF NOT EXISTS `group_settings` (
   `id` INT(11) NOT NULL AUTO_INCREMENT,
   `group_id` VARCHAR(255) NOT NULL,
   `setting_key` VARCHAR(255) NOT NULL,
@@ -108,7 +124,7 @@ CREATE TABLE `group_settings` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Tabel untuk pengguna yang dibanned
-CREATE TABLE `banned_users` (
+CREATE TABLE IF NOT EXISTS `banned_users` (
   `id` INT(11) NOT NULL AUTO_INCREMENT,
   `user_id` VARCHAR(255) NOT NULL,
   `reason` TEXT DEFAULT NULL,
@@ -118,3 +134,29 @@ CREATE TABLE `banned_users` (
   PRIMARY KEY (`id`),
   FOREIGN KEY (`user_id`) REFERENCES `users`(`user_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- Tambahkan tabel baru
+CREATE TABLE IF NOT EXISTS `bot_instances` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT,
+  `number` VARCHAR(20) NOT NULL UNIQUE,
+  `credentials` TEXT NOT NULL,
+  `status` ENUM('active','inactive') DEFAULT 'inactive',
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY(`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Pastikan status bot utama di database
+UPDATE bot_instances 
+SET status = 'inactive' 
+WHERE number = '+62887793482662';  -- Ganti dengan nomor bot utama
+
+-- Hapus instance duplikat
+DELETE FROM bot_instances 
+WHERE number LIKE '%@%' OR number = '';
+
+CREATE TABLE IF NOT EXISTS bot_qr_codes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    number VARCHAR(20) UNIQUE NOT NULL,
+    qr_data TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
