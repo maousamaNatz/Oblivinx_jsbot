@@ -126,6 +126,36 @@ class WhatsAppAPI {
       return false;
     }
   }
+
+  async sendMessage(jid, content, options = {}) {
+    try {
+      if (!this.sock || this.sock.connection !== 'open') {
+        throw new Error('Koneksi tidak aktif');
+      }
+      
+      let attempts = 0;
+      const maxAttempts = 3;
+      
+      while (attempts < maxAttempts) {
+        try {
+          const result = await Promise.race([
+            this.sock.sendMessage(jid, content, options),
+            new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('Timeout')), 15000)
+            )
+          ]);
+          return result;
+        } catch (error) {
+          attempts++;
+          if (attempts >= maxAttempts) throw error;
+          await new Promise(resolve => setTimeout(resolve, 2000 * attempts));
+        }
+      }
+    } catch (error) {
+      console.error(`Gagal mengirim pesan ke ${jid}:`, error);
+      throw error;
+    }
+  }
 }
 
 module.exports = WhatsAppAPI;

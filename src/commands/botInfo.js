@@ -217,3 +217,11 @@ global.Oblixn.cmd({
     }
   },
 });
+
+async function checkUpdate() {
+  try {
+    // ... kode yang ada ...
+  } catch (error) {
+    botLogger.warn(`Gagal memeriksa update: ${error.message}`);
+  }
+}

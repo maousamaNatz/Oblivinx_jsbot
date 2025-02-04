@@ -34,6 +34,7 @@ const {
   registerUser,
   getBotCredentials,
   saveBotCredentials,
+  handleQrCode,
 } = require("./config/dbConf/database");
 const { unbanUser } = require("./src/handler/messageHandler");
 const { handleGroupMessage } = require("./src/handler/groupHandler");
@@ -183,6 +184,10 @@ let qrTimer = null;
 
 // Tambahkan di bagian global variables
 global.otpHandlers = {};
+
+let reconnectAttempts = 0;
+const MAX_RECONNECT_ATTEMPTS = 5;
+const RECONNECT_INTERVAL = 5000; // 5 detik
 
 const initBot = async () => {
   try {
@@ -774,15 +779,28 @@ async function startChildBot(phoneNumber, credentials) {
             // Tambahkan handler untuk memaksa QR jika diperlukan
             shouldIgnoreJid: () => false,
             generateHighQualityLinkPreview: true,
-            getMessage: async () => null
+            getMessage: async () => null,
+            // Tambahkan reconnect interval 2 jam (7200 detik)
+            keepAliveIntervalMs: 7200000 
         });
 
         // Paksa update connection state
         childSock.ev.on('connection.update', (update) => {
-            if (update.qr) {
-                console.log(`⚠️ BUTUH QR untuk ${phoneNumber}`);
-                // Otomatis simpan QR ke database
-                saveQrToDatabase(phoneNumber, update.qr);
+            const { connection, lastDisconnect, qr } = update;
+            
+            if (qr) {
+                console.log('⚠️ BUTUH QR untuk', phoneNumber);
+                // Panggil fungsi yang sudah didefinisikan
+                handleQrCode(qr, phoneNumber).catch(console.error);
+            }
+
+            if (connection === 'close') {
+                const statusCode = lastDisconnect.error?.output?.statusCode;
+                if (statusCode === 401 || statusCode === 403 || statusCode === 404) {
+                    // Hapus session jika error auth
+                    fs.rmSync(authFolder, { recursive: true, force: true });
+                    console.log('⚠️ Session dihapus karena error auth');
+                }
             }
         });
 
@@ -795,19 +813,6 @@ async function startChildBot(phoneNumber, credentials) {
             [phoneNumber]
         );
         throw new Error(`Di nonaktifkan otomatis: ${error.message}`);
-    }
-}
-
-// Fungsi bantu untuk simpan QR ke database
-async function saveQrToDatabase(number, qr) {
-    try {
-        await pool.execute(
-            'INSERT INTO bot_qr_codes (number, qr_data) VALUES (?, ?) ' +
-            'ON DUPLICATE KEY UPDATE qr_data = ?',
-            [number, qr, qr]
-        );
-    } catch (qrError) {
-        console.error('Gagal simpan QR:', qrError);
     }
 }
 
@@ -841,27 +846,88 @@ async function startChildBots() {
 // Panggil fungsi setelah bot utama ready
 startChildBots();
 
+if (!global.childBots) {
+    global.childBots = new Map();
+}
+
 async function initializeBot(phoneNumber) {
+    let sock = null; // Deklarasi eksplisit dengan nilai null
+    
     try {
-        const credentials = await getBotCredentials(phoneNumber);
         const authFolder = path.join(__dirname, `auth_info_baileys/${phoneNumber}`);
         
-        if (!fs.existsSync(authFolder)) {
-            fs.mkdirSync(authFolder, { recursive: true });
+        // 1. Cleanup session korup
+        if (fs.existsSync(authFolder)) {
+            const sessionFiles = fs.readdirSync(authFolder);
+            if (sessionFiles.length === 0) {
+                fs.rmSync(authFolder, { recursive: true, force: true });
+                console.log(`🗑 Session kosong dihapus untuk ${phoneNumber}`);
+            }
         }
-        
-        const sock = makeWASocket({
+
+        // 2. Inisialisasi socket
+        const { state, saveCreds } = await useMultiFileAuthState(authFolder);
+        sock = makeWASocket({
             auth: {
-                creds: credentials.creds,
-                keys: credentials.keys
+                creds: state.creds,
+                keys: state.keys
             },
             logger: baileysLogger,
-            msgRetryCounterCache
+            msgRetryCounterCache,
+            getMessage: async key => {
+                return store.loadMessage(key.remoteJid, key.id) || {};
+            },
+            connectTimeoutMs: 30000,
+            keepAliveIntervalMs: 15000
         });
-        
+
+        // 3. Pasang event handlers
+        const setupEventHandlers = () => {
+            sock.ev.on('connection.update', (update) => {
+                const { connection, lastDisconnect } = update;
+                if (connection === 'close') {
+                    console.log(`🔌 Koneksi ${phoneNumber} terputus:`, lastDisconnect.error);
+                } else if (connection === 'open') {
+                    console.log(`✅ Koneksi ${phoneNumber} stabil`);
+                }
+            });
+
+            sock.ev.on('creds.update', saveCreds);
+        };
+
+        setupEventHandlers();
+
+        // 4. Simpan ke global map
         global.childBots.set(phoneNumber, sock);
-        console.log(`✅ Bot ${phoneNumber} berhasil diinisialisasi`);
+        console.log(`🤖 Bot ${phoneNumber} berhasil diinisialisasi`);
+        return sock;
+
     } catch (error) {
-        console.error(`Gagal inisialisasi bot ${phoneNumber}:`, error);
+        console.error(`❌ Gagal inisialisasi bot ${phoneNumber}:`, error);
+        
+        // 5. Cleanup jika sock sempat terinisialisasi
+        if (sock !== null) {
+            sock.ev.removeAllListeners();
+            sock.ws.close();
+        }
+        
+        // 6. Hapus session yang gagal
+        fs.rmSync(authFolder, { recursive: true, force: true });
+        throw error;
     }
 }
+
+process.on('exit', () => {
+    console.log('Membersihkan koneksi...');
+    global.childBots.forEach((sock, number) => {
+        sock.ev.removeAllListeners();
+        sock.ws.close();
+    });
+    global.childBots.clear();
+});
+
+const commandHandler = (text) => {
+  const pattern = /^[!\/\.](\w+)(?:\s+(.*))?$/i;  // Format: !command args
+  const match = text.match(pattern);
+  return match ? { command: match[1], args: match[2] } : null;
+};

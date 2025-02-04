@@ -144,12 +144,6 @@ CREATE TABLE IF NOT EXISTS `bot_instances` (
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY(`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- Pastikan status bot utama di database
-UPDATE bot_instances 
-SET status = 'inactive' 
-WHERE number = '+62887793482662';  -- Ganti dengan nomor bot utama
-
 -- Hapus instance duplikat
 DELETE FROM bot_instances 
 WHERE number LIKE '%@%' OR number = '';

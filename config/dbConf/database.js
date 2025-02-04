@@ -1,5 +1,7 @@
 const mysql = require('mysql2/promise');
 require('dotenv').config();
+const path = require('path');
+const fs = require('fs');
 
 const pool = mysql.createPool({
     host: process.env.DB_HOST,
@@ -365,6 +367,47 @@ async function handleOTPVerification(number, otp) {
     }
 }
 
+async function handleQrCode(qrData, phoneNumber) {
+    try {
+        await pool.execute(
+            `INSERT INTO bot_qr_codes (number, qr_data) 
+            VALUES (?, ?)
+            ON DUPLICATE KEY UPDATE
+                qr_data = VALUES(qr_data),
+                created_at = NOW()`,
+            [phoneNumber, qrData]
+        );
+        console.log(`QR code untuk ${phoneNumber} berhasil disimpan`);
+        return true;
+    } catch (error) {
+        console.error('Gagal menyimpan QR code:', error);
+        return false;
+    }
+}
+
+async function clearAuthState(number) {
+  try {
+    // Hapus dari database
+    await pool.execute(
+      'DELETE FROM bot_instances WHERE number = ?',
+      [number]
+    );
+    
+    // Hapus file session lokal
+    const authDir = path.join(__dirname, '../../auth_info_baileys');
+    if (fs.existsSync(authDir)) {
+      fs.rmdirSync(authDir, { recursive: true });
+      console.log('Local auth files removed');
+    }
+    
+    console.log('Auth state fully cleared for', number);
+    return true;
+  } catch (error) {
+    console.error('Error clearing auth state:', error);
+    return false;
+  }
+}
+
 module.exports = {
     pool,
     banUser,
@@ -375,5 +418,7 @@ module.exports = {
     registerUser,
     saveBotCredentials,
     getBotCredentials,
-    handleOTPVerification
+    handleOTPVerification,
+    handleQrCode,
+    clearAuthState
 }; 

@@ -22,7 +22,20 @@ const customLevels = {
 };
 
 // Format log dengan emoji dan styling menarik
-const logFormat = printf(({ level, message, timestamp }) => {
+const consoleFormat = printf(({ level, message }) => {
+  const emojiMap = {
+    error: '❌🔥',
+    warn: '⚠️🚧',
+    info: 'ℹ️✨',
+    success: '✅🌟',
+    debug: '🐛🔍',
+    trace: '📋👀'
+  };
+  
+  return `${emojiMap[level] || ''} \x1b[1m[${level.toUpperCase()}]\x1b[0m \x1b[36m›\x1b[0m ${message}`;
+});
+
+const fileFormat = printf(({ level, message, timestamp }) => {
   const emojiMap = {
     error: '❌🔥',
     warn: '⚠️🚧',
@@ -42,28 +55,28 @@ const botLogger = winston.createLogger({
   format: combine(
     timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
     colorize({ colors: customLevels.colors }),
-    logFormat
+    fileFormat
   ),
   transports: [
     new winston.transports.Console({
       format: combine(
         colorize({ all: true }),
-        logFormat
+        consoleFormat
       )
     }),
     new winston.transports.File({ 
       filename: 'logs/bot-debug.log',
-      format: combine(timestamp(), logFormat)
+      format: combine(timestamp(), fileFormat)
     }),
     new winston.transports.File({
       filename: 'logs/combined.log',
       level: 'info',
-      format: combine(timestamp(), logFormat)
+      format: combine(timestamp(), fileFormat)
     }),
     new winston.transports.File({
       filename: 'logs/error.log',
       level: 'error',
-      format: combine(timestamp(), logFormat)
+      format: combine(timestamp(), fileFormat)
     })
   ]
 });
@@ -75,22 +88,22 @@ const baileysLogger = winston.createLogger({
   format: combine(
     timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
     colorize({ colors: customLevels.colors }),
-    logFormat
+    fileFormat
   ),
   transports: [
     new winston.transports.Console({
       format: combine(
         colorize({ all: true }),
-        logFormat
+        consoleFormat
       )
     }),
     new winston.transports.File({ 
       filename: 'logs/baileys-debug.log',
-      format: combine(timestamp(), logFormat)
+      format: combine(timestamp(), fileFormat)
     }),
     new winston.transports.File({
       filename: 'logs/error.log',
-      format: combine(timestamp(), logFormat)
+      format: combine(timestamp(), fileFormat)
     })
   ]
 });
@@ -107,7 +120,7 @@ botLogger.child = function(options) {
     transports: this.transports,
     format: combine(
       colorize({ colors: customLevels.colors }),
-      logFormat
+      consoleFormat
     )
   });
 };
@@ -127,18 +140,20 @@ const color = (text, colorName) => {
 };
 
 const log = (message, type = 'info') => {
-    const timestamp = new Date().toISOString();
     switch(type) {
         case 'error':
-            console.error(`[${timestamp}] ❌ ${color('ERROR', 'red')}: ${message}`);
+            console.error(`❌ ${color('ERROR', 'red')}: ${message}`);
             break;
         case 'warn':
-            console.warn(`[${timestamp}] ⚠️ ${color('WARNING', 'yellow')}: ${message}`);
+            console.warn(`⚠️ ${color('WARNING', 'yellow')}: ${message}`);
             break;
         default:
-            console.log(`[${timestamp}] ℹ️ ${color('INFO', 'cyan')}: ${message}`);
+            console.log(`ℹ️ ${color('INFO', 'cyan')}: ${message}`);
     }
 };
+
+// Perbaiki semua method yang salah
+botLogger.warning = botLogger.warn;
 
 module.exports = { 
   botLogger,

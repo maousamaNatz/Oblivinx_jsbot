@@ -1,5 +1,5 @@
 const { makeInMemoryStore } = require("@whiskeysockets/baileys");
-const { botLogger } = require('../src/utils/logger');
+const { botLogger , baileysLogger} = require('../src/utils/logger');
 const path = require("path");
 const fs = require("fs");
 const os = require("os");
@@ -33,10 +33,16 @@ const BASE_PATH = path.resolve(__dirname, "..");
 const SESSIONS_PATH = path.join(BASE_PATH, "sessions");
 const STORE_PATH = path.join(BASE_PATH, "store");
 
-// Buat store untuk menyimpan data sementara
-const store = makeInMemoryStore({
-  logger: false,
+// Perbaikan inisialisasi store
+const store = makeInMemoryStore({ 
+  logger: baileysLogger 
 });
+
+// Pindahkan binding event ke bagian setelah socket dibuat
+let bindStoreToSocket = (sock) => {
+  store.bind(sock.ev);
+}
+
 const cpus = os.cpus();
 const prosessor = cpus[0].model;
 // Set path untuk store
